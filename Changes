@@ -1,0 +1,6 @@
+Revision history for Perl extension Sort::Key.
+
+0.01  Fri Mar 25 13:30:31 2005
+	- original version; created by h2xs 1.23 with options
+		-A -n Sort::Key
+
