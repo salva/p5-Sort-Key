@@ -4,7 +4,7 @@ use 5.008;
 use strict;
 use warnings;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 require Exporter;
 
@@ -82,7 +82,8 @@ This package exports these functions:
 
 =item keysort { CALC_KEY } @array
 
-sorts C<@array> by the key calculated applying C<{ CALC_KEY }>.
+returns the elements on C<@array> sorted by the key calculated
+applying C<{ CALC_KEY }> to them.
 
 Inside C<{ CALC_KEY }>, the object is available as C<$_>.
 
