@@ -4,12 +4,12 @@ use 5.008;
 use strict;
 use warnings;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 require Exporter;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw(keysort lkeysort nkeysort ikeysort);
+our @EXPORT_OK = qw(keysort lkeysort nkeysort ikeysort);
 
 require XSLoader;
 XSLoader::load('Sort::Key', $VERSION);
@@ -60,7 +60,7 @@ Sort::Key - Perl extension for sorting objects by some key
 
 =head1 SYNOPSIS
 
-  use Sort::Key;
+  use Sort::Key qw(keysort nkeysort ikeysort);
   
   @by_name = keysort { "$_->{surname} $_->{name}" } @people;
   @by_age = nkeysort { $_->{age} } @people;
@@ -76,7 +76,9 @@ around perl sort function.
 
 =head2 EXPORT
 
-This package exports these functions:
+None by default.
+
+Functions available from this module are:
 
 =over 4
 

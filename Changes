@@ -1,5 +1,8 @@
 Revision history for Perl extension Sort::Key.
 
+0.03  May 10 2005
+	- INCOMPATIBLE CHANGE: do not export anything by default.
+
 0.02  Apr 27 2005
 	- minor corrections to the module documentation.
 	- Makefile.PL clean up, required modules added.
