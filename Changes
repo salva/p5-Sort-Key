@@ -1,5 +1,13 @@
 Revision history for Perl extension Sort::Key.
 
+0.04  May 12 2005
+	- INCOMPATIBLE CHANGE: ikeysort and lkeysort removed, they are
+	  not needed anymore
+	- nkeysort honours "use integer" pragma
+	- keysort honours "use locale" pragma
+	- use PERL_NO_GET_CONTEXT on XS code
+	- use constants instead of hard coded numbers internally
+
 0.03  May 10 2005
 	- INCOMPATIBLE CHANGE: do not export anything by default.
 

@@ -1,3 +1,5 @@
+#define PERL_NO_GET_CONTEXT 1
+
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
@@ -5,7 +7,7 @@
 #include "ppport.h"
 
 static SV *
-fetch(AV *av, int i) {
+fetch(pTHX_ AV *av, int i) {
     SV **v=av_fetch(av, i, 0);
     if (v) return *v;
     return &PL_sv_undef;
@@ -70,7 +72,7 @@ PPCODE:
     sortsv((SV **)ix, len, (SVCOMPARE_t)cmp);
     for (i=0; i<len; i++) {
 	IV j=ix[i]-k;
-	SV *val=fetch(values, j);
+	SV *val=fetch(aTHX_ values, j);
 	if (!av_store(keys, i, SvREFCNT_inc(val))) SvREFCNT_dec(val);
     }
     Safefree(ix);
