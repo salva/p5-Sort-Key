@@ -4,55 +4,20 @@ use 5.008;
 use strict;
 use warnings;
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 require Exporter;
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(keysort nkeysort);
+our @EXPORT_OK = qw(keysort keysort_inplace
+		    rkeysort rkeysort_inplace
+		    nkeysort nkeysort_inplace
+		    rnkeysort rnkeysort_inplace
+		    ikeysort ikeysort_inplace
+		    rikeysort rikeysort_inplace);
 
 require XSLoader;
 XSLoader::load('Sort::Key', $VERSION);
-
-use constant STR_SORT => 0;
-use constant LOC_STR_SORT => 1;
-use constant NUM_SORT => 2;
-use constant INT_SORT => 3;
-
-my ($int_hints, $locale_hints);
-BEGIN {
-    use integer;
-    $int_hints = $integer::hint_bits || 0x1;
-
-    use locale;
-    $locale_hints = $locale::hint_bits || 0x4;
-
-    # print STDERR "locale: $locale_hints, int: $int_hints\n";
-}
-
-sub keysort (&@) {
-    my $k = shift;
-    my @k = map { scalar(&{$k}) } @_;
-    my $sort = ((caller(0))[8] & $locale_hints)
-	? LOC_STR_SORT : STR_SORT;
-    _keysort($sort, \@k, \@_);
-    wantarray ? @k : $k[0];
-}
-
-sub nkeysort(&@) {
-    my $k = shift;
-    my @k;
-    if ((caller(0))[8] & $int_hints) {
-	use integer;
-	@k = map { int(&{$k}) } @_;
-	_keysort(INT_SORT, \@k, \@_);
-    }
-    else {
-	@k = map { scalar(&{$k}) } @_;
-	_keysort(NUM_SORT, \@k, \@_);
-    }
-    wantarray ? @k : $k[0];
-}
 
 1;
 
@@ -75,8 +40,8 @@ Sort::Key - Perl extension for sorting objects by some key
 Sort::Key provides a set of functions to sort object arrays by some
 (calculated) key value.
 
-Usually, it is faster and uses less memory than other alternatives implemented
-around perl sort function.
+It is faster and uses less memory than other alternatives implemented
+around perl sort function (ST, GRM, etc.)
 
 =head2 EXPORT
 
@@ -116,12 +81,41 @@ prints
 
   0.8 1.6 1.2 2.4 2
 
+=item rnkeysort { CALC_KEY } @array
+
+works as nkeysort, comparing keys in reverse (or descending) numerical order.
+
+=item ikeysort { CALC_KEY } @array
+
+works as keysort but compares the keys as integers.
+
+=item rikeysort { CALC_KEY } @array
+
+works as ikeysort, but in reverser (descending order).
+
+=item keysort_inplace { CALC_KEY } @array
+
+=item nkeysort_inplace { CALC_KEY } @array
+
+=item ikeysort_inplace { CALC_KEY } @array
+
+=item rkeysort_inplace { CALC_KEY } @array
+
+=item rnkeysort_inplace { CALC_KEY } @array
+
+=item rikeysort_inplace { CALC_KEY } @array
+
+work as the corresponding keysort functions but sorting the array
+inplace.
+
 =back
 
 
 =head1 SEE ALSO
 
 perl L<sort> function, L<integer>, L<locale>.
+
+And alternative to this module is L<Sort::Maker>.
 
 =head1 AUTHOR
 

@@ -8,4 +8,5 @@ WriteMakefile( NAME          => 'Sort::Key',
 	       AUTHOR        => 'Salvador Fandino <sfandino@yahoo.com>',
 	       LIBS          => [''],
 	       DEFINE        => '',
+	       OPTIMIZE      => '-g -O0',
 	       INC           => '-I.' );

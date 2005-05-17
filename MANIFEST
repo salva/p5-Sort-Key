@@ -4,6 +4,8 @@ Makefile.PL
 MANIFEST
 ppport.h
 README
-t/Sort-Key.t
+t/strings.t
+t/ints.t
+t/floats.t
 lib/Sort/Key.pm
 META.yml                                 Module meta-data (added by MakeMaker)

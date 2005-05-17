@@ -1,5 +1,10 @@
 Revision history for Perl extension Sort::Key.
 
+0.05  May 16 2005
+	- everything rewritten in pure C
+	- ikeysort and lkeysort reimplemented
+	- keysort_inplace function family implemented
+
 0.04  May 12 2005
 	- INCOMPATIBLE CHANGE: ikeysort and lkeysort removed, they are
 	  not needed anymore
