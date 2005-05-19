@@ -1,5 +1,11 @@
 Revision history for Perl extension Sort::Key.
 
+0.06  May 17 2005
+	- removed dummy 'foo' function
+	- multikey support added
+	- companion modules Sort::Key::Register and Sort::Key::Maker
+	  added.
+
 0.05  May 16 2005
 	- everything rewritten in pure C
 	- ikeysort and lkeysort reimplemented

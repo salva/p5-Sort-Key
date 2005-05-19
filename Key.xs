@@ -89,14 +89,14 @@ ix_ri_cmp(pTHX_ IV *a, IV *b) {
     return iv1 < iv2 ? -1 : iv1 > iv2 ? 1 : 0;
 }
 
-static void *v_alloc(pTHX_ IV n, IV eil2size) {
+static void *v_alloc(pTHX_ IV n, IV lsize) {
     void *r;
-    Newc(799, r, n<<eil2size, char, void);
+    Newc(799, r, n<<lsize, char, void);
     SAVEFREEPV(r);
     return r;
 }
 
-static void *av_alloc(pTHX_ IV n, IV eil2size) {
+static void *av_alloc(pTHX_ IV n, IV lsize) {
     AV *av=(AV*)sv_2mortal((SV*)newAV());
     av_fill(av, n-1);
     return AvARRAY(av);
@@ -113,6 +113,9 @@ static void n_store(pTHX_ SV *v, void *to) {
 static void sv_store(pTHX_ SV *v, void *to) {
     *((SV**)to)=SvREFCNT_inc(v);
 }
+
+#define lsizeof(A) (ilog2(sizeof(A)))
+
 
 static int ilog2(int i) {
     if (i>256) croak("internal error");
@@ -141,21 +144,22 @@ static int ilog2(int i) {
 
 */
 
-void
+typedef IV (*COMPARE_t)(pTHX_ void*, void*);
+typedef void (*STORE_t)(pTHX_ SV*, void*);
+
+static void
 _keysort(pTHX_ IV type, SV *keygen, SV **values, I32 ax, IV len) {
     dSP;
     if (len) {
 	void *keys;
 	void **ixkeys;
 	IV i;
-	AV *magic=0;
 	SV *old_defsv;
 	SV **from, **to;
 
-	SVCOMPARE_t cmp; /* I32 (*cmp)(pTHX_ SV **, SV **); */
-	void *(*alloc)(pTHX_ IV, IV);
-	IV esize, eil2size;
-	void (*store)(pTHX_ SV*, void *to);
+	IV lsize;
+	COMPARE_t cmp;
+	STORE_t store;
 
 	switch(type) {
 	case 0:
@@ -170,59 +174,57 @@ _keysort(pTHX_ IV type, SV *keygen, SV **values, I32 ax, IV len) {
 
 	switch(type) {
 	case 0:
-	    cmp = (SVCOMPARE_t)&ix_sv_cmp;
-	    esize = sizeof(SV*);
-	    alloc = av_alloc;
+	    cmp = (COMPARE_t)&ix_sv_cmp;
+	    lsize = lsizeof(SV*);
+	    keys = av_alloc(aTHX_ len, lsize);
 	    store = sv_store;
 	    break;
 	case 1:
-	    cmp = (SVCOMPARE_t)&ix_lsv_cmp;
-	    esize = sizeof(SV*);
-	    alloc = av_alloc;
+	    cmp = (COMPARE_t)&ix_lsv_cmp;
+	    lsize = lsizeof(SV*);
+	    keys = av_alloc(aTHX_ len, lsize);
 	    store = sv_store;
 	    break;
 	case 2:
-	    cmp = (SVCOMPARE_t)&ix_n_cmp;
-	    esize = sizeof(NV);
-	    alloc = v_alloc;
+	    cmp = (COMPARE_t)&ix_n_cmp;
+	    lsize = lsizeof(NV);
+	    keys = v_alloc(aTHX_ len, lsize);
 	    store = n_store;
 	    break;
 	case 3:
-	    cmp = (SVCOMPARE_t)&ix_i_cmp;
-	    esize = sizeof(IV);
-	    alloc = v_alloc;
+	    cmp = (COMPARE_t)&ix_i_cmp;
+	    lsize = lsizeof(IV);
+	    keys = v_alloc(aTHX_ len, lsize);
 	    store = i_store;
 	    break;
 	case 128:
-	    cmp = (SVCOMPARE_t)&ix_rsv_cmp;
-	    esize = sizeof(SV*);
-	    alloc = av_alloc;
+	    cmp = (COMPARE_t)&ix_rsv_cmp;
+	    lsize = lsizeof(SV*);
+	    keys = av_alloc(aTHX_ len, lsize);
 	    store = sv_store;
 	    break;
 	case 129:
-	    cmp = (SVCOMPARE_t)&ix_rlsv_cmp;
-	    esize = sizeof(SV*);
-	    alloc = av_alloc;
+	    cmp = (COMPARE_t)&ix_rlsv_cmp;
+	    lsize = lsizeof(SV*);
+	    keys = av_alloc(aTHX_ len, lsize);
 	    store = sv_store;
 	    break;
 	case 130:
-	    cmp = (SVCOMPARE_t)&ix_rn_cmp;
-	    esize = sizeof(NV);
-	    alloc = v_alloc;
+	    cmp = (COMPARE_t)&ix_rn_cmp;
+	    lsize = lsizeof(NV);
+	    keys = v_alloc(aTHX_ len, lsize);
 	    store = n_store;
 	    break;
 	case 131:
-	    cmp = (SVCOMPARE_t)&ix_ri_cmp;
-	    esize = sizeof(IV);
-	    alloc = v_alloc;
+	    cmp = (COMPARE_t)&ix_ri_cmp;
+	    lsize = lsizeof(IV);
+	    keys = v_alloc(aTHX_ len, lsize);
 	    store = i_store;
 	    break;
 	default:
 	    croak("unsupported sort type %d", type);
 	}
 
-	eil2size = ilog2(esize);
-	keys = (*alloc)(aTHX_ len, eil2size);
 	New(799, ixkeys, len, void*);
 	SAVEFREEPV(ixkeys);
 	old_defsv=DEFSV;
@@ -235,53 +237,209 @@ _keysort(pTHX_ IV type, SV *keygen, SV **values, I32 ax, IV len) {
 	    /* warn("values=%p SP=%p SP-len=%p, &ST(0)=%p\n", values, SP, SP-len, &ST(0)); */
 	    ENTER;
 	    SAVETMPS;
-	    current = values ? values[i] : ST(i+1);
+	    current = values ? values[i] : ST(i+1); /* WARNING: hard coded offset!!! */ 
 	    DEFSV = current ? current : sv_2mortal(newSV(0));
 	    PUSHMARK(SP);
-	    /* PUTBACK; */
+	    PUTBACK;
 	    count = call_sv(keygen, G_SCALAR);
 	    SPAGAIN;
 	    if (count != 1)
 		croak("wrong number of results returned from key generation sub");
 	    result = POPs;
 	    /* warn("key: %_\n", result); */
-	    ixkeys[i] = target = keys+(i<<eil2size);
+	    ixkeys[i] = target = keys+(i<<lsize);
 	    (*store)(aTHX_ result, target);
 	    FREETMPS;
 	    LEAVE;
 	}
 	DEFSV=old_defsv;
 	sortsv((SV**)ixkeys, len, (SVCOMPARE_t)cmp);
-	/* warn("sroted\n"); */
-	SPAGAIN;
 	if (values) {
 	    from = to = values;
 	}
 	else {
-	    from = &ST(1);
+	    from = &ST(1); /* WARNING: hard coded offset!!! */ 
 	    to = &ST(0);
 	}
-	/* warn("from=%p, to=%p\n", from, to); */
 	for(i=0; i<len; i++) {
-	    IV j = (ixkeys[i]-keys)>>eil2size;
+	    IV j = (ixkeys[i]-keys)>>lsize;
 	    ixkeys[i] = from[j];
 	}
 	for(i=0; i<len; i++) {
 	    to[i] = (SV*)ixkeys[i];
 	}
-	/* warn("copied\n"); */
+    }
+}
+
+typedef struct multikey {
+    COMPARE_t cmp;
+    void *data;
+    IV lsize;
+} MK;
+
+static IV _multikeycmp(pTHX_ void *a, void *b) {
+    MK *keys = (MK*)PL_sortcop;
+    IV r = (*(keys->cmp))(aTHX_ a, b);
+    if (r) 
+	return r;
+    else {
+	IV ixa = (a-keys->data) >> keys->lsize;
+	IV ixb = (b-keys->data) >> keys->lsize;
+	COMPARE_t cmp;
+	while(1) {
+	    keys++;
+	    cmp=keys->cmp;
+	    if (!cmp)
+		return 0;
+	    a = keys->data+(ixa<<keys->lsize);
+	    b = keys->data+(ixb<<keys->lsize);
+	    r = (*cmp)(aTHX_ a, b);
+	    if (r)
+		return r;
+	}
+    }
+    return 0; /* dead code just to remove warnings from some
+	       * compilers */
+}
+
+static void
+_multikeysort (pTHX_ SV *keygen, SV *keytypes,
+	       SV**values, I32 ax, IV len) {
+    dSP;
+    STRLEN nkeys;
+    unsigned char *types=(unsigned char *)SvPV(keytypes, nkeys);
+
+    if (nkeys<1)
+	croak("empty multikey type list passed");
+
+    if (len) {
+	IV i;
+	MK *keys;
+	STORE_t *store;
+	void **ixkeys;
+	SV *old_defsv;
+	SV **from, **to;
+
+	New(799, keys, nkeys+1, MK);
+	SAVEFREEPV(keys);
+	New(799, store, nkeys, STORE_t);
+	SAVEFREEPV(store);
+	
+	for(i=0; i<nkeys; i++) {
+	    MK *key = keys+i;
+	    switch(types[i]) {
+	    case 0:
+		key->cmp = (COMPARE_t)&ix_sv_cmp;
+		key->lsize = lsizeof(SV*);
+		key->data = av_alloc(aTHX_ len, key->lsize);
+		store[i] = sv_store;
+		break;
+	    case 1:
+		key->cmp = (COMPARE_t)&ix_lsv_cmp;
+		key->lsize = lsizeof(SV*);
+		key->data = av_alloc(aTHX_ len, key->lsize);
+		store[i] = sv_store;
+		break;
+	    case 2:
+		key->cmp = (COMPARE_t)&ix_n_cmp;
+		key->lsize = lsizeof(NV);
+		key->data = v_alloc(aTHX_ len, key->lsize);
+		store[i] = n_store;
+		break;
+	    case 3:
+		key->cmp = (COMPARE_t)&ix_i_cmp;
+		key->lsize = lsizeof(IV);
+		key->data = v_alloc(aTHX_ len, key->lsize);
+		store[i] = i_store;
+		break;
+	    case 128:
+		key->cmp = (COMPARE_t)&ix_rsv_cmp;
+		key->lsize = lsizeof(SV*);
+		key->data = av_alloc(aTHX_ len, key->lsize);
+		store[i] = sv_store;
+		break;
+	    case 129:
+		key->cmp = (COMPARE_t)&ix_rlsv_cmp;
+		key->lsize = lsizeof(SV*);
+		key->data = av_alloc(aTHX_ len, key->lsize);
+		store[i] = sv_store;
+		break;
+	    case 130:
+		key->cmp = (COMPARE_t)&ix_rn_cmp;
+		key->lsize = lsizeof(NV);
+		key->data = v_alloc(aTHX_ len, key->lsize);
+		store[i] = n_store;
+		break;
+	    case 131:
+		key->cmp = (COMPARE_t)&ix_ri_cmp;
+		key->lsize = lsizeof(IV);
+		key->data = v_alloc(aTHX_ len, key->lsize);
+		store[i] = i_store;
+		break;
+	    default:
+		croak("unsupported sort type %d", types[i]);
+	    }
+	}
+
+	keys[nkeys].cmp = 0;
+	keys[nkeys].data = 0;
+	keys[nkeys].lsize = 0;
+	    
+	New(799, ixkeys, len, void*);
+	SAVEFREEPV(ixkeys);
+	old_defsv=DEFSV;
+	SAVE_DEFSV;
+	for (i=0; i<len; i++) {
+	    IV count;
+	    SV *current;
+	    void *target;
+	    ENTER;
+	    SAVETMPS;
+	    current = values ? values[i] : ST(i+2); /* WARNING: hard coded offset!!! */ 
+	    DEFSV = current ? current : sv_2mortal(newSV(0));
+	    PUSHMARK(SP);
+	    PUTBACK;
+	    count = call_sv(keygen, G_ARRAY);
+	    SPAGAIN;
+	    if (count != nkeys)
+		croak("wrong number of results returned "
+		      "from multikey generation sub "
+		      "(%d expected, %d returned)",
+		      nkeys, count);
+	    while(count-- > 0) {
+		SV *result = POPs;
+		MK *key = keys+count;
+		target = key->data + (i<<key->lsize);
+		(*(store[count]))(aTHX_ result, target);
+	    }
+	    ixkeys[i] = target;
+	    FREETMPS;
+	    LEAVE;
+	}
+	DEFSV=old_defsv;
+	SAVEVPTR(PL_sortcop);
+	PL_sortcop = (OP*)keys;
+	sortsv((SV**)ixkeys, len, (SVCOMPARE_t)_multikeycmp);
+	if (values) {
+	    from = to = values;
+	}
+	else {
+	    from = &ST(2); /* WARNING: hard coded offset!!! */ 
+	    to = &ST(0);
+	}
+	for(i=0; i<len; i++) {
+	    IV j = (ixkeys[i]-keys->data)>>keys->lsize;
+	    ixkeys[i] = from[j];
+	}
+	for(i=0; i<len; i++) {
+	    to[i] = (SV*)ixkeys[i];
+	}
     }
 }
 
 
 MODULE = Sort::Key		PACKAGE = Sort::Key		
 PROTOTYPES: ENABLE
-
-void
-foo(SV *keygen, SV* two, ...)
-PPCODE:
-    EXTEND(SP, 1);
-    PUSHs(sv_2mortal(newSViv(7)));
 
 void
 keysort(SV *keygen, ...)
@@ -297,10 +455,8 @@ ALIAS:
 PPCODE:
     items--;
     if (items) {
-	/* warn("&ST(0)=%p, PL_stack_base=%p\n", &ST(0), PL_stack_base); */
 	_keysort(aTHX_ ix, keygen, 0, ax, items);
 	SP=&ST(items-1);
-	/* warn("&ST(0)=%p, PL_stack_base=%p\n", &ST(0), PL_stack_base); */
     }
 
 
@@ -349,3 +505,51 @@ PPCODE:
 	}
     }
 
+
+void
+_multikeysort(SV *keygen, SV *keytypes, ...)
+PROTOTYPE: &$@
+PPCODE:
+    items-=2;
+    if (items) {
+	_multikeysort(aTHX_ keygen, keytypes, 0, ax, items);
+	SP=&ST(items-1);
+    }
+
+
+void
+_multikeysort_inplace(SV *keygen, SV *keytypes, AV *values)
+PROTOTYPE: &\@
+PREINIT:
+    AV *magic_values=0;
+    int len;
+PPCODE:
+    if ((len=av_len(values)+1)) {
+	/* warn("ix=%d\n", ix); */
+	if (SvMAGICAL(values) || AvREIFY(values)) {
+	    int i;
+	    magic_values = values;
+	    values = (AV*)sv_2mortal((SV*)newAV());
+	    av_extend(values, len-1);
+	    for (i=0; i<len; i++) {
+		SV **currentp = av_fetch(magic_values, i, 0);
+		av_store( values, i,
+			  ( currentp
+			    ? SvREFCNT_inc(*currentp)
+			    : newSV(0) ) );
+	    }
+	}
+
+	_multikeysort(aTHX_ keygen, keytypes, AvARRAY(values), 0, len);
+
+	if (magic_values) {
+	    int i;
+	    SV **values_array = AvARRAY(values);
+	    for(i=0; i<len; i++) {
+		SV *current = values_array[i];
+		if (!current) current = &PL_sv_undef;
+		if (!av_store(magic_values, i, SvREFCNT_inc(current)))
+		    SvREFCNT_dec(current);
+	    }
+	}
+    }
