@@ -71,11 +71,22 @@ also via L<Sort::Key::register_type()>).
 
 =item use Sort::Key::Maker foo_sort =E<gt> @keys;
 
-exports two subroutines to the caller package: C<foo_sorter (&@)> and
-C<foo_sorter_inplace (&\@)>. They both require a sub reference as their
-first argument and then respectively, the list to be sorted or an array.
+exports two subroutines to the caller package: C<foo_sort (&@)> and
+C<foo_sort_inplace (&\@)>.
 
-=item use Sort::Key::Maker foo_sort =>E<gt> \&genmultikey, @keys;
+Those two subroutines require a sub reference as their first argument
+and then respectively, the list to be sorted or an array.
+
+For instance:
+
+  use Sort::Key::Maker bar_sort => qw(int int str);
+
+  @bar=qw(doo tomo 45s tio);
+  @sorted = bar_sort { unpack "CCs", $_ } @bar;
+  # or sorting @bar inplace
+  bar_sort_inplace { unpack "CCs", $_ } @bar;
+
+=item use Sort::Key::Maker foo_sort =E<gt> \&genmultikey, @keys;
 
 when the first argument after the sorter name is a reference to a
 subroutine it is used as the multikey extraction function. The

@@ -247,7 +247,7 @@ _keysort(pTHX_ IV type, SV *keygen, SV **values, I32 ax, IV len) {
 		croak("wrong number of results returned from key generation sub");
 	    result = POPs;
 	    /* warn("key: %_\n", result); */
-	    ixkeys[i] = target = keys+(i<<lsize);
+	    ixkeys[i] = target = ((char*)keys)+(i<<lsize);
 	    (*store)(aTHX_ result, target);
 	    FREETMPS;
 	    LEAVE;
@@ -262,7 +262,7 @@ _keysort(pTHX_ IV type, SV *keygen, SV **values, I32 ax, IV len) {
 	    to = &ST(0);
 	}
 	for(i=0; i<len; i++) {
-	    IV j = (ixkeys[i]-keys)>>lsize;
+	  IV j = ( ((char*)(ixkeys[i])) - ((char*)keys) )>>lsize;
 	    ixkeys[i] = from[j];
 	}
 	for(i=0; i<len; i++) {
@@ -283,16 +283,16 @@ static IV _multikeycmp(pTHX_ void *a, void *b) {
     if (r) 
 	return r;
     else {
-	IV ixa = (a-keys->data) >> keys->lsize;
-	IV ixb = (b-keys->data) >> keys->lsize;
+	IV ixa = ( ((char*)a) - ((char*)(keys->data)) ) >> keys->lsize;
+	IV ixb = ( ((char*)b) - ((char*)(keys->data)) ) >> keys->lsize;
 	COMPARE_t cmp;
 	while(1) {
 	    keys++;
 	    cmp=keys->cmp;
 	    if (!cmp)
 		return 0;
-	    a = keys->data+(ixa<<keys->lsize);
-	    b = keys->data+(ixb<<keys->lsize);
+	    a = ((char*)(keys->data))+(ixa<<keys->lsize);
+	    b = ((char*)(keys->data))+(ixb<<keys->lsize);
 	    r = (*cmp)(aTHX_ a, b);
 	    if (r)
 		return r;
@@ -409,7 +409,7 @@ _multikeysort (pTHX_ SV *keygen, SV *keytypes,
 	    while(count-- > 0) {
 		SV *result = POPs;
 		MK *key = keys+count;
-		target = key->data + (i<<key->lsize);
+		target = ((char*)(key->data)) + (i<<key->lsize);
 		(*(store[count]))(aTHX_ result, target);
 	    }
 	    ixkeys[i] = target;
@@ -428,7 +428,7 @@ _multikeysort (pTHX_ SV *keygen, SV *keytypes,
 	    to = &ST(0);
 	}
 	for(i=0; i<len; i++) {
-	    IV j = (ixkeys[i]-keys->data)>>keys->lsize;
+	    IV j = ( ((char*)(ixkeys[i])) - ((char*)(keys->data)) )>>keys->lsize;
 	    ixkeys[i] = from[j];
 	}
 	for(i=0; i<len; i++) {

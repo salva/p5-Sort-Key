@@ -48,6 +48,13 @@ functionality is provided via C<use>:
 
   use Sort::Key::Register ...
 
+To avoid collisions between modules registering types with the same
+name, you should qualify them with the package name.
+
+  use Sort::Key::Register 'MyPkg::foo' => sub { $_ }, '-int';
+
+  # or using __PACKAGE__:
+  use Sort::Key::Register __PACKAGE__, sub { $_ }, '-int';
 
 =head2 USAGE
 

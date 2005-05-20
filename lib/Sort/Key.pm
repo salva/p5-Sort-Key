@@ -1,6 +1,6 @@
 package Sort::Key;
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 use 5.008;
 
@@ -323,21 +323,24 @@ are the low level interface to the multikey sorting functionality
 (normally, you should use L<Sort::Key::Maker> and
 L<Sort::Key::Register> instead).
 
-They get a list of keys descriptions and return a reference to a
+They get a list of key descriptions and return a reference to a
 multikey sorting subroutine.
 
 Types accepted by default are:
 
   string, str, locale, loc, integer, int, number, num
 
-and support for additional types can be added via the non exportable
-L<register_type> subroutine (see below) or the more friendle interface
+Support for additional types can be added via the non exportable
+L<register_type> subroutine (see below) or the more friendly interface
 available in L<Sort::Key::Register>.
 
-Types can be preceded by a minus sign to indicate descending order.
+Types can be preceded by a minus sign to indicate descending order,
+i.e.:
+
+  my $sorter = multikeysorter(qw(-int -str));
 
 If the first argument is a reference to a subroutine it is used as the
-multikey extraction function. If not, the generated sorters
+multikey extraction function. If not, the generated sorters will
 expect one as their first argument.
 
 Example:
@@ -351,11 +354,12 @@ Example:
 
 =item Sort::Key::register_type($name, \&gensubkeys, @subkeystypes)
 
-registers a new datatype named C<$name> defining how to convert it to
-a multikey.
+registers a new datatype named C<$name> defining how to extract a
+multikey from it.
 
-C<&gensubkeys> should convert the object of type C<$name> passed on
-C<$_> to a list of values composing the multikey.
+C<&gensubkeys> is the multikey extraction sub. When called, it has to
+return the list of values forming the multikey for the object passed
+on C<$_>.
 
 C<@subkeystypes> is the list of types for the generated multikeys.
 
