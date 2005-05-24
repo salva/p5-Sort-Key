@@ -5,10 +5,11 @@ use warnings;
 
 # BEGIN {$Sort::Key::DEBUG=10};
 
-use Test::More tests => 4;
+use Test::More tests => 6;
 
 use Sort::Key::Maker nrs_keysort => sub { length($_), $_ }, qw(num -str);
 use Sort::Key::Register length => sub { length $_ }, qw(int);
+use Sort::Key::Maker len_keysort => qw(length);
 
 sub random_str {
     my $l=int rand(30);
@@ -17,11 +18,16 @@ sub random_str {
 
 my @data=map { random_str } 1..1000;
 my @sorted = sort {length($a) <=> length($b) or $b cmp $a } @data;
+my @data1 = @data;
 
 is_deeply([nrs_keysort @data], \@sorted, 'nrs');
 nrs_keysort_inplace @data;
-
 is_deeply(\@data, \@sorted, 'nrs inplace');
+
+my @sorted1 = sort { length $a <=> length $b } @data1;
+is_deeply([len_keysort {$_} @data1], \@sorted1, "post");
+len_keysort_inplace {$_} @data1;
+is_deeply(\@data1, \@sorted1, "post inplace");
 
 sub random_pair { [ rand, rand] }
 sub random_pair_pair { [random_pair, random_pair] };

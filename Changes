@@ -1,5 +1,10 @@
 Revision history for Perl extension Sort::Key.
 
+0.08  May 20 2005
+	- optimized first key comparison for multikey sort
+	- dead code removed: old comparison functions
+	- generate closures as XSUBs
+
 0.07  May 19 2005
 	- some compilers don't like arithmetic with void pointers,
 	  some castings to (char*) added.

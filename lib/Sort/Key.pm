@@ -1,6 +1,6 @@
 package Sort::Key;
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 use 5.008;
 
@@ -89,6 +89,9 @@ sub _combine_sub {
     if ($sub) {
 	my $code = 'sub { '._nl;
 	if (ref $sub eq 'CODE') {
+	    unless (grep { defined $_ } @subs) {
+		return $sub
+	    }
 	    $code.= 'my @keys = &{$sub};'._nl;
 	}
 	else {
@@ -160,30 +163,15 @@ sub multikeysorter {
 	my $sub = _combine_sub($keygen, undef, @_);
 	@_ or croak "too few keys";
 	my $ptypes = pack('C*', (map { _mks2n $_ } _combine_map(@_)));
-	return sub {
-	    unshift @_, $sub, $ptypes;
-	    &_multikeysort;
-	}
+	# print "type 1\n";
+	# return _multikeysorter($ptypes, $keygen);
+	return _multikeysorter($ptypes, $sub, undef);
     }
     else {
 	my $sub = _combine_sub('@_', undef, @_);
 	@_ or croak "too few keys";
 	my $ptypes = pack('C*', (map { _mks2n $_ } _combine_map(@_)));
-	if (defined $sub) {
-	    return sub (&@) {
-		my $keygen = shift;
-		my $map = sub { &{$sub}(&$keygen()) };
-		unshift @_, $map, $ptypes;
-		&_multikeysort;
-	    }
-	}
-	else {
-	    return sub (&@) {
-		my $keygen = shift;
-		unshift @_, $keygen, $ptypes;
-		&_multikeysort;
-	    }
-	}
+	return _multikeysorter($ptypes, undef, $sub)
     }
 }
 
@@ -193,28 +181,13 @@ sub multikeysorter_inplace {
 	my $sub = _combine_sub($keygen, undef, @_);
 	@_ or croak "too few keys";
 	my $ptypes = pack('C*', (map { _mks2n $_ } _combine_map(@_)));
-	return sub (\@) {
-	    &_multikeysort_inplace($sub, $ptypes, $_[0]);
-	}
+	return _multikeysorter_inplace($ptypes, $sub, undef);
     }
     else {
 	my $sub = _combine_sub('@_', undef, @_);
 	@_ or croak "too few keys";
 	my $ptypes = pack('C*', (map { _mks2n $_ } _combine_map(@_)));
-	if (defined $sub) {
-	    return sub (&@) {
-		my $keygen = shift;
-		my $map = sub { &{$sub}(&$keygen()) };
-		&_multikeysort_inplace($map, $ptypes, $_[0]);
-	    }
-	}
-	else {
-	    return sub (&@) {
-		my $keygen = shift;
-		unshift @_, $keygen, $ptypes;
-		&_multikeysort_inplace($_[0], $ptypes, $_[1]);
-	    }
-	}
+	return _multikeysorter_inplace($ptypes, undef, $sub);
     }
 }
 
@@ -323,24 +296,21 @@ are the low level interface to the multikey sorting functionality
 (normally, you should use L<Sort::Key::Maker> and
 L<Sort::Key::Register> instead).
 
-They get a list of key descriptions and return a reference to a
+They get a list of keys descriptions and return a reference to a
 multikey sorting subroutine.
 
 Types accepted by default are:
 
   string, str, locale, loc, integer, int, number, num
 
-Support for additional types can be added via the non exportable
-L<register_type> subroutine (see below) or the more friendly interface
+and support for additional types can be added via the non exportable
+L<register_type> subroutine (see below) or the more friendle interface
 available in L<Sort::Key::Register>.
 
-Types can be preceded by a minus sign to indicate descending order,
-i.e.:
-
-  my $sorter = multikeysorter(qw(-int -str));
+Types can be preceded by a minus sign to indicate descending order.
 
 If the first argument is a reference to a subroutine it is used as the
-multikey extraction function. If not, the generated sorters will
+multikey extraction function. If not, the generated sorters
 expect one as their first argument.
 
 Example:
@@ -354,12 +324,11 @@ Example:
 
 =item Sort::Key::register_type($name, \&gensubkeys, @subkeystypes)
 
-registers a new datatype named C<$name> defining how to extract a
-multikey from it.
+registers a new datatype named C<$name> defining how to convert it to
+a multikey.
 
-C<&gensubkeys> is the multikey extraction sub. When called, it has to
-return the list of values forming the multikey for the object passed
-on C<$_>.
+C<&gensubkeys> should convert the object of type C<$name> passed on
+C<$_> to a list of values composing the multikey.
 
 C<@subkeystypes> is the list of types for the generated multikeys.
 

@@ -1,3 +1,4 @@
+
 #define PERL_NO_GET_CONTEXT 1
 
 #include "EXTERN.h"
@@ -34,20 +35,6 @@ ix_rlsv_cmp(pTHX_ SV **a, SV **b) {
 }
 
 static I32
-ix_nsv_cmp(pTHX_ SV **a, SV **b) {
-    NV nv1 = SvNV(*a);
-    NV nv2 = SvNV(*b);
-    return nv1 < nv2 ? -1 : nv1 > nv2 ? 1 : 0;
-}
-
-static I32
-ix_rnsv_cmp(pTHX_ SV **a, SV **b) {
-    NV nv1 = SvNV(*b);
-    NV nv2 = SvNV(*a);
-    return nv1 < nv2 ? -1 : nv1 > nv2 ? 1 : 0;
-}
-
-static I32
 ix_n_cmp(pTHX_ NV *a, NV *b) {
     NV nv1 = *a;
     NV nv2 = *b;
@@ -59,20 +46,6 @@ ix_rn_cmp(pTHX_ NV *a, NV *b) {
     NV nv1 = *b;
     NV nv2 = *a;
     return nv1 < nv2 ? -1 : nv1 > nv2 ? 1 : 0;
-}
-
-static I32
-ix_isv_cmp(pTHX_ SV **a, SV **b) {
-    IV iv1 = SvIV(*a);
-    IV iv2 = SvIV(*b);
-    return iv1 < iv2 ? -1 : iv1 > iv2 ? 1 : 0;
-}
-
-static I32
-ix_risv_cmp(pTHX_ SV **a, SV **b) {
-    IV iv1 = SvIV(*b);
-    IV iv2 = SvIV(*a);
-    return iv1 < iv2 ? -1 : iv1 > iv2 ? 1 : 0;
 }
 
 static I32
@@ -144,7 +117,7 @@ static int ilog2(int i) {
 
 */
 
-typedef IV (*COMPARE_t)(pTHX_ void*, void*);
+typedef I32 (*COMPARE_t)(pTHX_ void*, void*);
 typedef void (*STORE_t)(pTHX_ SV*, void*);
 
 static void
@@ -277,7 +250,8 @@ typedef struct multikey {
     IV lsize;
 } MK;
 
-static IV _multikeycmp(pTHX_ void *a, void *b) {
+
+static I32 _multikeycmp(pTHX_ void *a, void *b) {
     MK *keys = (MK*)PL_sortcop;
     IV r = (*(keys->cmp))(aTHX_ a, b);
     if (r) 
@@ -302,9 +276,86 @@ static IV _multikeycmp(pTHX_ void *a, void *b) {
 	       * compilers */
 }
 
+static I32 _secondkeycmp(pTHX_ void *a, void *b) {
+    MK *keys = (MK*)PL_sortcop;
+    IV ixa = ( ((char*)a) - ((char*)(keys->data)) ) >> keys->lsize;
+    IV ixb = ( ((char*)b) - ((char*)(keys->data)) ) >> keys->lsize;
+    COMPARE_t cmp;
+    while(1) {
+	I32 r;
+	keys++;
+	cmp=keys->cmp;
+	if (!cmp)
+	    return 0;
+	a = ((char*)(keys->data))+(ixa<<keys->lsize);
+	b = ((char*)(keys->data))+(ixb<<keys->lsize);
+	r = (*cmp)(aTHX_ a, b);
+	if (r)
+	    return r;
+    }
+    return 0; /* dead code just to remove warnings from some
+	       * compilers */
+}
+
+static I32
+ix_sv_mcmp(pTHX_ SV **a, SV **b) {
+    I32 r = sv_cmp(*a, *b);
+    if (r) return r;
+    return _secondkeycmp(aTHX_ a, b);
+}
+
+static I32
+ix_rsv_mcmp(pTHX_ SV **a, SV **b) {
+    I32 r = sv_cmp(*b, *a);
+    if (r) return r;
+    return _secondkeycmp(aTHX_ a, b);
+}
+
+static I32
+ix_lsv_mcmp(pTHX_ SV **a, SV **b) {
+    I32 r = sv_cmp_locale(*a, *b);
+    if (r) return r;
+    return _secondkeycmp(aTHX_ a, b);
+}
+
+static I32
+ix_rlsv_mcmp(pTHX_ SV **a, SV **b) {
+    I32 r = sv_cmp_locale(*b, *a);
+    if (r) return r;
+    return _secondkeycmp(aTHX_ a, b);
+}
+
+static I32
+ix_n_mcmp(pTHX_ NV *a, NV *b) {
+    NV nv1 = *a;
+    NV nv2 = *b;
+    return nv1 < nv2 ? -1 : nv1 > nv2 ? 1 : _secondkeycmp(aTHX_ a, b);
+}
+
+static I32
+ix_rn_mcmp(pTHX_ NV *a, NV *b) {
+    NV nv1 = *b;
+    NV nv2 = *a;
+    return nv1 < nv2 ? -1 : nv1 > nv2 ? 1 : _secondkeycmp(aTHX_ a, b);
+}
+
+static I32
+ix_i_mcmp(pTHX_ IV *a, IV *b) {
+    IV iv1 = *a;
+    IV iv2 = *b;
+    return iv1 < iv2 ? -1 : iv1 > iv2 ? 1 : _secondkeycmp(aTHX_ a, b);
+}
+
+static I32
+ix_ri_mcmp(pTHX_ IV *a, IV *b) {
+    IV iv1 = *b;
+    IV iv2 = *a;
+    return iv1 < iv2 ? -1 : iv1 > iv2 ? 1 : _secondkeycmp(aTHX_ a, b);
+}
+
 static void
-_multikeysort (pTHX_ SV *keygen, SV *keytypes,
-	       SV**values, I32 ax, IV len) {
+_multikeysort(pTHX_ SV *keytypes, SV *keygen, SV *post,
+	      SV**values, I32 from_offset, I32 ax, I32 len) {
     dSP;
     STRLEN nkeys;
     unsigned char *types=(unsigned char *)SvPV(keytypes, nkeys);
@@ -319,6 +370,7 @@ _multikeysort (pTHX_ SV *keygen, SV *keytypes,
 	void **ixkeys;
 	SV *old_defsv;
 	SV **from, **to;
+	COMPARE_t cmp = (COMPARE_t)&_multikeycmp;
 
 	New(799, keys, nkeys+1, MK);
 	SAVEFREEPV(keys);
@@ -329,48 +381,56 @@ _multikeysort (pTHX_ SV *keygen, SV *keytypes,
 	    MK *key = keys+i;
 	    switch(types[i]) {
 	    case 0:
+		if (i==0) cmp = (COMPARE_t)&ix_sv_mcmp;
 		key->cmp = (COMPARE_t)&ix_sv_cmp;
 		key->lsize = lsizeof(SV*);
 		key->data = av_alloc(aTHX_ len, key->lsize);
 		store[i] = sv_store;
 		break;
 	    case 1:
+		if (i==0) cmp = (COMPARE_t)&ix_lsv_mcmp;
 		key->cmp = (COMPARE_t)&ix_lsv_cmp;
 		key->lsize = lsizeof(SV*);
 		key->data = av_alloc(aTHX_ len, key->lsize);
 		store[i] = sv_store;
 		break;
 	    case 2:
+		if (i==0) cmp = (COMPARE_t)&ix_n_mcmp;
 		key->cmp = (COMPARE_t)&ix_n_cmp;
 		key->lsize = lsizeof(NV);
 		key->data = v_alloc(aTHX_ len, key->lsize);
 		store[i] = n_store;
 		break;
 	    case 3:
+		if (i==0) cmp = (COMPARE_t)&ix_i_mcmp;
 		key->cmp = (COMPARE_t)&ix_i_cmp;
 		key->lsize = lsizeof(IV);
 		key->data = v_alloc(aTHX_ len, key->lsize);
 		store[i] = i_store;
 		break;
 	    case 128:
+		if (i==0) cmp = (COMPARE_t)&ix_rsv_mcmp;
 		key->cmp = (COMPARE_t)&ix_rsv_cmp;
 		key->lsize = lsizeof(SV*);
 		key->data = av_alloc(aTHX_ len, key->lsize);
 		store[i] = sv_store;
 		break;
 	    case 129:
+		if (i==0) cmp = (COMPARE_t)&ix_rlsv_mcmp;
 		key->cmp = (COMPARE_t)&ix_rlsv_cmp;
 		key->lsize = lsizeof(SV*);
 		key->data = av_alloc(aTHX_ len, key->lsize);
 		store[i] = sv_store;
 		break;
 	    case 130:
+		if (i==0) cmp = (COMPARE_t)&ix_rn_mcmp;
 		key->cmp = (COMPARE_t)&ix_rn_cmp;
 		key->lsize = lsizeof(NV);
 		key->data = v_alloc(aTHX_ len, key->lsize);
 		store[i] = n_store;
 		break;
 	    case 131:
+		if (i==0) cmp = (COMPARE_t)&ix_ri_mcmp;
 		key->cmp = (COMPARE_t)&ix_ri_cmp;
 		key->lsize = lsizeof(IV);
 		key->data = v_alloc(aTHX_ len, key->lsize);
@@ -395,12 +455,18 @@ _multikeysort (pTHX_ SV *keygen, SV *keytypes,
 	    void *target;
 	    ENTER;
 	    SAVETMPS;
-	    current = values ? values[i] : ST(i+2); /* WARNING: hard coded offset!!! */ 
+	    current = values ? values[i] : ST(i+from_offset);
 	    DEFSV = current ? current : sv_2mortal(newSV(0));
 	    PUSHMARK(SP);
 	    PUTBACK;
 	    count = call_sv(keygen, G_ARRAY);
 	    SPAGAIN;
+	    if (post) {
+		PUSHMARK(SP-count);
+		PUTBACK;
+		count = call_sv(post, G_ARRAY);
+		SPAGAIN;
+	    }
 	    if (count != nkeys)
 		croak("wrong number of results returned "
 		      "from multikey generation sub "
@@ -419,12 +485,12 @@ _multikeysort (pTHX_ SV *keygen, SV *keytypes,
 	DEFSV=old_defsv;
 	SAVEVPTR(PL_sortcop);
 	PL_sortcop = (OP*)keys;
-	sortsv((SV**)ixkeys, len, (SVCOMPARE_t)_multikeycmp);
+	sortsv((SV**)ixkeys, len, (SVCOMPARE_t)cmp);
 	if (values) {
 	    from = to = values;
 	}
 	else {
-	    from = &ST(2); /* WARNING: hard coded offset!!! */ 
+	    from = &ST(from_offset);
 	    to = &ST(0);
 	}
 	for(i=0; i<len; i++) {
@@ -435,6 +501,144 @@ _multikeysort (pTHX_ SV *keygen, SV *keytypes,
 	    to[i] = (SV*)ixkeys[i];
 	}
     }
+}
+
+static AV *
+_xclosure_defaults(pTHX_ CV *cv) {
+    MAGIC *magic = mg_find((SV*)cv, '~');
+    if (magic) {
+	if ( magic->mg_obj
+	     && SvTYPE((SV*)(magic->mg_obj)) == SVt_PVAV )
+	    return (AV*)(magic->mg_obj);
+	croak("internal error: bad XSUB closure");
+    }
+    return NULL;
+}
+
+static void
+_xclosure_make(pTHX_ CV *cv, AV *defaults) {
+    sv_magic((SV*)cv, (SV*)defaults, '~', "XCLOSURE", 0);
+}
+
+XS(XS_Sort__Key__multikeysort);
+XS(XS_Sort__Key__multikeysort)
+{
+    dXSARGS;
+    SV *gen=0;
+    SV *post=0;
+    SV *types=0;
+    IV offset=0;
+
+    AV *defaults = _xclosure_defaults(aTHX_ cv);
+
+    if (defaults) {
+	types = *(av_fetch(defaults, 0, 1));
+	gen = *(av_fetch(defaults, 1, 1));
+	post = *(av_fetch(defaults, 2, 1));
+	if (!SvOK(post))
+	    post = 0;
+    }
+
+    if (!types || !SvOK(types)) {
+	if (items--)
+	    types = ST(offset++);
+	else
+	    croak("not enough arguments");
+
+    }
+    if (!gen || !SvOK(gen)) {
+	if (items--)
+	    gen = ST(offset++);
+	else
+	    croak("not enough arguments");
+    }
+
+    /* _keysort(aTHX_ SvPV_nolen(types)[0], gen, 0, ax, items-1); */
+    _multikeysort(aTHX_ types, gen, post, 0, offset, ax, items);
+    SP=&ST(items-1);
+    PUTBACK;
+    return;
+}
+
+
+XS(XS_Sort__Key__multikeysort_inplace);
+XS(XS_Sort__Key__multikeysort_inplace)
+{
+    dXSARGS;
+    SV *gen;
+    SV *post;
+    SV *types;
+    AV *values;
+
+    AV *magic_values=0;
+    I32 len;
+    I32 offset=0;
+
+    AV *defaults = _xclosure_defaults(aTHX_ cv);
+
+    if (defaults) {
+	types = *(av_fetch(defaults, 0, 1));
+	gen = *(av_fetch(defaults, 1, 1));
+	post = *(av_fetch(defaults, 2, 1));
+	if (!SvOK(post))
+	    post = 0;
+    }
+
+    SP-=items;
+
+    if (!types || !SvOK(types)) {
+	if (items--)
+	    types = ST(offset++);
+	else
+	    croak("not enough arguments, packed multikey type descriptor required");
+    }
+    if (!gen || !SvOK(gen)) {
+	if (items--)
+	    gen = ST(offset++);
+	else
+	    croak("not enough arguments, reference to multikey generation subroutine required");
+    }
+
+    if(!(SvROK(gen) && SvTYPE(SvRV(gen))==SVt_PVCV))
+       croak("wrong argument type, subroutine reference required");
+
+    if (items != 1)
+	croak("not enough arguments, array reference required");
+
+    if (SvROK(ST(offset)) && SvTYPE(SvRV(ST(offset)))==SVt_PVAV)
+	values = (AV*)SvRV(ST(offset));
+    else croak("wrong argument type, array reference required");
+
+    if ((len=av_len(values)+1)) {
+	/* warn("ix=%d\n", ix); */
+	if (SvMAGICAL(values) || AvREIFY(values)) {
+	    int i;
+	    magic_values = values;
+	    values = (AV*)sv_2mortal((SV*)newAV());
+	    av_extend(values, len-1);
+	    for (i=0; i<len; i++) {
+		SV **currentp = av_fetch(magic_values, i, 0);
+		av_store( values, i,
+			  ( currentp
+			    ? SvREFCNT_inc(*currentp)
+			    : newSV(0) ) );
+	    }
+	}
+	
+	_multikeysort(aTHX_ types, gen, post, AvARRAY(values), 0, 0, len);
+	
+	if (magic_values) {
+	    int i;
+	    SV **values_array = AvARRAY(values);
+	    for(i=0; i<len; i++) {
+		SV *current = values_array[i];
+		if (!current) current = &PL_sv_undef;
+		if (!av_store(magic_values, i, SvREFCNT_inc(current)))
+		    SvREFCNT_dec(current);
+	    }
+	}
+    }
+    PUTBACK;
 }
 
 
@@ -505,51 +709,44 @@ PPCODE:
 	}
     }
 
+PROTOTYPES: DISABLE
 
-void
-_multikeysort(SV *keygen, SV *keytypes, ...)
-PROTOTYPE: &$@
-PPCODE:
-    items-=2;
-    if (items) {
-	_multikeysort(aTHX_ keygen, keytypes, 0, ax, items);
-	SP=&ST(items-1);
-    }
-
-
-void
-_multikeysort_inplace(SV *keygen, SV *keytypes, AV *values)
-PROTOTYPE: &\@
+CV *
+_multikeysorter(SV *types, SV *gen, SV *post)
 PREINIT:
-    AV *magic_values=0;
-    int len;
-PPCODE:
-    if ((len=av_len(values)+1)) {
-	/* warn("ix=%d\n", ix); */
-	if (SvMAGICAL(values) || AvREIFY(values)) {
-	    int i;
-	    magic_values = values;
-	    values = (AV*)sv_2mortal((SV*)newAV());
-	    av_extend(values, len-1);
-	    for (i=0; i<len; i++) {
-		SV **currentp = av_fetch(magic_values, i, 0);
-		av_store( values, i,
-			  ( currentp
-			    ? SvREFCNT_inc(*currentp)
-			    : newSV(0) ) );
-	    }
-	}
+    AV *defaults;
+CODE:
+    if (!SvOK(types) || sv_len(types)<1)
+	croak("invalid packed types argument");
+    RETVAL = newXS(0, &XS_Sort__Key__multikeysort, __FILE__);
+    defaults = (AV*)sv_2mortal((SV*)newAV());
+    av_store(defaults, 0, newSVsv(types));
+    av_store(defaults, 1, newSVsv(gen));
+    av_store(defaults, 2, newSVsv(post));
+    _xclosure_make(aTHX_ RETVAL, defaults);
+    if (!SvOK(gen))
+	sv_setpv((SV*)RETVAL, "&@");
+OUTPUT:
+    RETVAL
 
-	_multikeysort(aTHX_ keygen, keytypes, AvARRAY(values), 0, len);
+CV *
+_multikeysorter_inplace(SV *types, SV *gen, SV *post)
+PREINIT:
+    AV *defaults;
+CODE:
+    if (!SvOK(types) || sv_len(types)<1)
+	croak("invalid packed types argument");
+    RETVAL = newXS(0, &XS_Sort__Key__multikeysort_inplace, __FILE__);
+    defaults = (AV*)sv_2mortal((SV*)newAV());
+    av_store(defaults, 0, newSVsv(types));
+    av_store(defaults, 1, newSVsv(gen));
+    av_store(defaults, 2, newSVsv(post));
+    _xclosure_make(aTHX_ RETVAL, defaults);
+    if (!SvOK(gen))
+	sv_setpv((SV*)RETVAL, "&\\@");
+    else
+	sv_setpv((SV*)RETVAL, "\\@");
+OUTPUT:
+    RETVAL
 
-	if (magic_values) {
-	    int i;
-	    SV **values_array = AvARRAY(values);
-	    for(i=0; i<len; i++) {
-		SV *current = values_array[i];
-		if (!current) current = &PL_sv_undef;
-		if (!av_store(magic_values, i, SvREFCNT_inc(current)))
-		    SvREFCNT_dec(current);
-	    }
-	}
-    }
+
