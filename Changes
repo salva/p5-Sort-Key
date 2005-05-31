@@ -1,5 +1,8 @@
 Revision history for Perl extension Sort::Key.
 
+0.09  May 30 2005
+	- add support for nsort and friends.
+
 0.08  May 20 2005
 	- optimized first key comparison for multikey sort
 	- dead code removed: old comparison functions

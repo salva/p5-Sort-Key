@@ -1,6 +1,6 @@
 package Sort::Key;
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 
 use 5.008;
 
@@ -11,14 +11,20 @@ use Carp;
 require Exporter;
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(keysort keysort_inplace
-		    rkeysort rkeysort_inplace
-		    nkeysort nkeysort_inplace
-		    rnkeysort rnkeysort_inplace
-		    ikeysort ikeysort_inplace
-		    rikeysort rikeysort_inplace
+our @EXPORT_OK = qw( nsort nsort_inplace
+		     isort isort_inplace
+		     rsort rsort_inplace
+		     rnsort rnsort_inplace
+		     risort risort_inplace
 
-		    multikeysorter multikeysorter_inplace);
+		     keysort keysort_inplace
+		     rkeysort rkeysort_inplace
+		     nkeysort nkeysort_inplace
+		     rnkeysort rnkeysort_inplace
+		     ikeysort ikeysort_inplace
+		     rikeysort rikeysort_inplace
+
+		     multikeysorter multikeysorter_inplace);
 
 require XSLoader;
 XSLoader::load('Sort::Key', $VERSION);
@@ -219,11 +225,9 @@ alternatives implemented around perl sort function (ST, GRM, etc.).
 Multikey sorting functionality is also provided via the companion
 modules L<Sort::Key::Maker> and L<Sort::Key::Register>.
 
-=head2 EXPORT
-
-None by default.
-
 =head2 FUNCTIONS
+
+The following functions can be imported from this module:
 
 =over 4
 
@@ -283,6 +287,38 @@ works as ikeysort, but in reverse (or descending) order.
 
 work as the corresponding keysort functions but sorting the array
 inplace.
+
+=item rsort @array
+
+=item nsort @array
+
+=item rnsort @array
+
+=item isort @array
+
+=item risort @array
+
+=item rsort_inplace @array
+
+=item nsort_inplace @array
+
+=item rnsort_inplace @array
+
+=item isort_inplace @array
+
+=item risort_inplace @array
+
+are simplified versions of its keysort cousins. They use the own
+values as the sorting keys.
+
+For instance those constructions are equivalent:
+
+  @sorted = nsort @foo;
+
+  @sorted = nkeysort { $_ } @foo;
+
+  @sorted = sort { $a <=> $b } @foo;
+
 
 =item multikeysorter(@types)
 

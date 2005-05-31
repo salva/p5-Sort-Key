@@ -121,7 +121,7 @@ typedef I32 (*COMPARE_t)(pTHX_ void*, void*);
 typedef void (*STORE_t)(pTHX_ SV*, void*);
 
 static void
-_keysort(pTHX_ IV type, SV *keygen, SV **values, I32 ax, IV len) {
+_keysort(pTHX_ IV type, SV *keygen, SV **values, I32 offset, I32 ax, IV len) {
     dSP;
     if (len) {
 	void *keys;
@@ -200,38 +200,51 @@ _keysort(pTHX_ IV type, SV *keygen, SV **values, I32 ax, IV len) {
 
 	New(799, ixkeys, len, void*);
 	SAVEFREEPV(ixkeys);
-	old_defsv=DEFSV;
-	SAVE_DEFSV;
-	for (i=0; i<len; i++) {
-	    IV count;
-	    SV *current;
-	    SV *result;
-	    void *target;
-	    /* warn("values=%p SP=%p SP-len=%p, &ST(0)=%p\n", values, SP, SP-len, &ST(0)); */
-	    ENTER;
-	    SAVETMPS;
-	    current = values ? values[i] : ST(i+1); /* WARNING: hard coded offset!!! */ 
-	    DEFSV = current ? current : sv_2mortal(newSV(0));
-	    PUSHMARK(SP);
-	    PUTBACK;
-	    count = call_sv(keygen, G_SCALAR);
-	    SPAGAIN;
-	    if (count != 1)
-		croak("wrong number of results returned from key generation sub");
-	    result = POPs;
-	    /* warn("key: %_\n", result); */
-	    ixkeys[i] = target = ((char*)keys)+(i<<lsize);
-	    (*store)(aTHX_ result, target);
-	    FREETMPS;
-	    LEAVE;
+	if (keygen) {
+	    old_defsv=DEFSV;
+	    SAVE_DEFSV;
+	    for (i=0; i<len; i++) {
+		IV count;
+		SV *current;
+		SV *result;
+		void *target;
+		/* warn("values=%p SP=%p SP-len=%p, &ST(0)=%p\n", values, SP, SP-len, &ST(0)); */
+		ENTER;
+		SAVETMPS;
+		current = values ? values[i] : ST(i+offset);
+		DEFSV = current ? current : sv_2mortal(newSV(0));
+		PUSHMARK(SP);
+		PUTBACK;
+		count = call_sv(keygen, G_SCALAR);
+		SPAGAIN;
+		if (count != 1)
+		    croak("wrong number of results returned from key generation sub");
+		result = POPs;
+		/* warn("key: %_\n", result); */
+		ixkeys[i] = target = ((char*)keys)+(i<<lsize);
+		(*store)(aTHX_ result, target);
+		FREETMPS;
+		LEAVE;
+	    }
+	    DEFSV=old_defsv;
 	}
-	DEFSV=old_defsv;
+	else {
+	    for (i=0; i<len; i++) {
+		void *target;
+		SV *current = values ? values[i] : ST(i+offset);
+		ixkeys[i] = target = ((char*)keys)+(i<<lsize);
+
+		(*store)(aTHX_
+			 current ? current : sv_2mortal(newSV(0)),
+			 target);
+	    }
+	}
 	sortsv((SV**)ixkeys, len, (SVCOMPARE_t)cmp);
 	if (values) {
 	    from = to = values;
 	}
 	else {
-	    from = &ST(1); /* WARNING: hard coded offset!!! */ 
+	    from = &ST(offset);
 	    to = &ST(0);
 	}
 	for(i=0; i<len; i++) {
@@ -553,7 +566,6 @@ XS(XS_Sort__Key__multikeysort)
 	    croak("not enough arguments");
     }
 
-    /* _keysort(aTHX_ SvPV_nolen(types)[0], gen, 0, ax, items-1); */
     _multikeysort(aTHX_ types, gen, post, 0, offset, ax, items);
     SP=&ST(items-1);
     PUTBACK;
@@ -659,8 +671,8 @@ ALIAS:
 PPCODE:
     items--;
     if (items) {
-	_keysort(aTHX_ ix, keygen, 0, ax, items);
-	SP=&ST(items-1);
+	_keysort(aTHX_ ix, keygen, 0, 1, ax, items);
+	SP = &ST(items-1);
     }
 
 
@@ -695,7 +707,7 @@ PPCODE:
 	    }
 	}
 
-	_keysort(aTHX_ ix, keygen, AvARRAY(values), 0, len);
+	_keysort(aTHX_ ix, keygen, AvARRAY(values), 0, 0, len);
 
 	if (magic_values) {
 	    int i;
@@ -708,6 +720,69 @@ PPCODE:
 	    }
 	}
     }
+
+void
+_sort(...)
+PROTOTYPE: @
+ALIAS:
+    lsort = 1
+    nsort = 2
+    isort = 3
+    rsort = 128
+    rlsort = 129
+    rnsort = 130
+    risort = 131
+PPCODE:
+    if (items) {
+	_keysort(aTHX_ ix, 0, 0, 0, ax, items);
+	SP = &ST(items-1);
+    }
+
+void
+_sort_inplace(AV *values)
+PROTOTYPE: \@
+PREINIT:
+    AV *magic_values=0;
+    int len;
+ALIAS:
+    lsort_inplace = 1
+    nsort_inplace = 2
+    isort_inplace = 3
+    rsort_inplace = 128
+    rlsort_inplace = 129
+    rnsort_inplace = 130
+    risort_inplace = 131
+PPCODE:
+    if ((len=av_len(values)+1)) {
+	/* warn("ix=%d\n", ix); */
+	if (SvMAGICAL(values) || AvREIFY(values)) {
+	    int i;
+	    magic_values = values;
+	    values = (AV*)sv_2mortal((SV*)newAV());
+	    av_extend(values, len-1);
+	    for (i=0; i<len; i++) {
+		SV **currentp = av_fetch(magic_values, i, 0);
+		av_store( values, i,
+			  ( currentp
+			    ? SvREFCNT_inc(*currentp)
+			    : newSV(0) ) );
+	    }
+	}
+
+	_keysort(aTHX_ ix, 0, AvARRAY(values), 0, 0, len);
+
+	if (magic_values) {
+	    int i;
+	    SV **values_array = AvARRAY(values);
+	    for(i=0; i<len; i++) {
+		SV *current = values_array[i];
+		if (!current) current = &PL_sv_undef;
+		if (!av_store(magic_values, i, SvREFCNT_inc(current)))
+		    SvREFCNT_dec(current);
+	    }
+	}
+    }
+
 
 PROTOTYPES: DISABLE
 
