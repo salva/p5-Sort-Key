@@ -6,6 +6,8 @@ use warnings;
 use Test::More tests => 5;
 use Sort::Key qw(nkeysort rnkeysort nsort rnsort);
 
+use sort 'stable';
+
 my @data=map { rand(20)-10 } 1..10000;
 
 use integer;

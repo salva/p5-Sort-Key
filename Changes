@@ -1,5 +1,8 @@
 Revision history for Perl extension Sort::Key.
 
+0.10  Jun 2 2005
+	- force stable sort on tests
+
 0.09  May 30 2005
 	- add support for nsort and friends.
 
