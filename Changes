@@ -1,5 +1,9 @@
 Revision history for Perl extension Sort::Key.
 
+0.11  Jun 21 2005
+	- work around bug in perl native sort
+	- doc errors (patch submited by Mike Castle)
+
 0.10  Jun 2 2005
 	- force stable sort on tests
 

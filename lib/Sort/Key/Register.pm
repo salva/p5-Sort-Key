@@ -27,13 +27,13 @@ Sort::Key::Register - tell Sort::Key how to sort new data types.
 
 =head1 SYNOPSYS
 
-  use Key::Sort::Register Person =>
+  use Sort::Key::Register Person =>
       sub { $_->surname, $_->name },
       qw(string string);
 
-  use Key::Sort::Register 'Color::Component' => 'integer';
+  use Sort::Key::Register 'Color::Component' => 'integer';
 
-  use Key::Sort::Register Color =>
+  use Sort::Key::Register Color =>
       sub { $_->R, $_->G, $_->B },
       ('Color::Component') x 3;
 
