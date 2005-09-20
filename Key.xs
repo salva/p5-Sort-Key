@@ -7,13 +7,6 @@
 
 #include "ppport.h"
 
-static SV *
-fetch(pTHX_ AV *av, int i) {
-    SV **v=av_fetch(av, i, 0);
-    if (v) return *v;
-    return &PL_sv_undef;
-}
-
 static I32
 ix_sv_cmp(pTHX_ SV **a, SV **b) {
     return sv_cmp(*a, *b);
@@ -577,9 +570,9 @@ XS(XS_Sort__Key__multikeysort_inplace);
 XS(XS_Sort__Key__multikeysort_inplace)
 {
     dXSARGS;
-    SV *gen;
-    SV *post;
-    SV *types;
+    SV *gen = 0;
+    SV *post = 0;
+    SV *types = 0;
     AV *values;
 
     AV *magic_values=0;

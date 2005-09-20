@@ -1,6 +1,6 @@
 package Sort::Key::Maker;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use warnings;
 use strict;
@@ -26,7 +26,7 @@ __END__
 
 =head1 NAME
 
-Sort::Key::Maker - sorts objetcs combining several keys really fast
+Sort::Key::Maker - sorts objetcs by several keys really fast
 
 =head1 SYNOPSYS
 
@@ -52,10 +52,10 @@ Sort::Key::Maker - sorts objetcs combining several keys really fast
 
 =head1 DESCRIPTION
 
-Sort::Key::Maker is a pragmatic module that provides a friendly and
-easy to use interface for Sort::Key multikey sorting functionality.
+Sort::Key::Maker is a pragmatic module that provides an easy to use
+interface to Sort::Key multikey sorting functionality.
 
-It create multikey sorting functions on the fly for any key type
+It creates multikey sorting functions on the fly for any key type
 combination and exports them to the caller package.
 
 The key types natively accepted are:
