@@ -1,6 +1,6 @@
 package Sort::Key::Register;
 
-our $VERSION = '0.01';
+our $VERSION = '0.14';
 
 use warnings;
 use strict;
@@ -72,6 +72,8 @@ C<@keytypes> are the types of the extracted keys.
 this 'use' is useful for simple types that are sorted as another type
 already registered, maybe changing the direction of the sort
 (ascending or descending).
+
+=back
 
 =head1 SEE ALSO
 

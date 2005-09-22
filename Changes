@@ -1,5 +1,9 @@
 Revision history for Perl extension Sort::Key.
 
+0.14  22 Sep 2005
+	- corrected some pod errors an now using Test::Pod to catch
+	  those.
+
 0.13  Sep 14 2005
 	- corrected some bugs on multikey sorting that could cause the
 	  program to crash

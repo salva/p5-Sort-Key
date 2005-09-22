@@ -8,6 +8,7 @@ t/strings.t
 t/ints.t
 t/floats.t
 t/multi.t
+t/pods.t
 lib/Sort/Key.pm
 lib/Sort/Key/Maker.pm
 lib/Sort/Key/Register.pm
