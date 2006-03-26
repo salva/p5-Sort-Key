@@ -13,7 +13,7 @@ our @CARP_NOT = qw(Sort::Key);
 sub import {
     my $class = shift;
     my $name = shift;
-    my $caller=caller;
+    my $caller = caller;
 
     no strict 'refs';
     *{"${caller}::${name}"} = multikeysorter @_;
@@ -26,7 +26,7 @@ __END__
 
 =head1 NAME
 
-Sort::Key::Maker - sorts objetcs by several keys really fast
+Sort::Key::Maker - multikey sorter creator
 
 =head1 SYNOPSYS
 

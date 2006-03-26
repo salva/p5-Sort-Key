@@ -1,6 +1,6 @@
 package Sort::Key;
 
-our $VERSION = '0.14';
+our $VERSION = '1.15';
 
 use 5.008;
 
@@ -204,7 +204,7 @@ __END__
 
 =head1 NAME
 
-Sort::Key - sorts objects by one or several keys really fast
+Sort::Key - fastest way to sort things in perl
 
 =head1 SYNOPSIS
 
@@ -216,14 +216,15 @@ Sort::Key - sorts objects by one or several keys really fast
 
 =head1 DESCRIPTION
 
-Sort::Key provides a set of functions to sort object arrays by some
-(calculated) key value.
+Sort::Key provides a set of functions to sort list of values by some
+calculated key value.
 
 It is faster (usually B<much faster>) and uses less memory than other
 alternatives implemented around perl sort function (ST, GRM, etc.).
 
 Multikey sorting functionality is also provided via the companion
-modules L<Sort::Key::Maker> and L<Sort::Key::Register>.
+modules L<Sort::Key::Multi>, L<Sort::Key::Maker> and
+L<Sort::Key::Register>.
 
 =head2 FUNCTIONS
 
@@ -330,7 +331,7 @@ For instance those constructions are equivalent:
 
 are the low level interface to the multikey sorting functionality
 (normally, you should use L<Sort::Key::Maker> and
-L<Sort::Key::Register> instead).
+L<Sort::Key::Register> or L<Sort::Key::Multi> instead).
 
 They get a list of keys descriptions and return a reference to a
 multikey sorting subroutine.
@@ -397,7 +398,8 @@ as types supported natively, even for defining new types, i.e.:
 
 perl L<sort> function, L<integer>, L<locale>.
 
-Companion modules L<Sort::Key::Register> and L<Sort::Key::Maker>.
+Companion modules L<Sort::Key::Multi>, L<Sort::Key::Register> and
+L<Sort::Key::Maker>.
 
 And alternative to this module is L<Sort::Maker>.
 
@@ -407,7 +409,7 @@ Salvador FandiE<ntilde>o, E<lt>sfandino@yahoo.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2005 by Salvador FandiE<ntilde>o
+Copyright (C) 2006 by Salvador FandiE<ntilde>o
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.4 or,

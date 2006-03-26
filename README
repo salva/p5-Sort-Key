@@ -1,7 +1,7 @@
 Sort-Key
 ========
 
-sort object arrays by some (calculated) key value.
+sort arrays by one or multiple calculated keys.
 
 INSTALLATION
 
@@ -15,7 +15,7 @@ To install this module type the following:
 
 COPYRIGHT AND LICENCE
 
-Copyright (C) 2005 by Salvador Fandino
+Copyright (C) 2005, 2006 by Salvador Fandino <sfandino@yahoo.com>
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.4 or,
