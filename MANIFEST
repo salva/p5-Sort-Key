@@ -8,9 +8,11 @@ t/strings.t
 t/ints.t
 t/floats.t
 t/multi.t
+t/natural.t
 t/pods.t
 lib/Sort/Key.pm
 lib/Sort/Key/Maker.pm
 lib/Sort/Key/Multi.pm
+lib/Sort/Key/Natural.pm
 lib/Sort/Key/Register.pm
 META.yml                                 Module meta-data (added by MakeMaker)

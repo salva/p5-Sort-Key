@@ -1,5 +1,8 @@
 Revision history for Perl extension Sort::Key.
 
+1.16  6 Apr 2006
+	- added new Sort::Key::Natural module for natural sorting.
+
 1.15  26 Mar 2006
 	- new interface for multikey sorting Sort::Key::Multi
 	- version number bumped to 1.xx to reflect stability

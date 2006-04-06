@@ -1,6 +1,6 @@
 package Sort::Key;
 
-our $VERSION = '1.15';
+our $VERSION = '1.16';
 
 use 5.008;
 
@@ -398,18 +398,16 @@ as types supported natively, even for defining new types, i.e.:
 
 perl L<sort> function, L<integer>, L<locale>.
 
-Companion modules L<Sort::Key::Multi>, L<Sort::Key::Register> and
-L<Sort::Key::Maker>.
+Companion modules L<Sort::Key::Multi>, L<Sort::Key::Register>,
+L<Sort::Key::Maker> and L<Sort:Key::Util>.
 
-And alternative to this module is L<Sort::Maker>.
-
-=head1 AUTHOR
-
-Salvador FandiE<ntilde>o, E<lt>sfandino@yahoo.comE<gt>
+Other interesting Perl sorting modules are L<Sort::Maker> and
+L<Sort::Natural>.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2006 by Salvador FandiE<ntilde>o
+Copyright (C) 2005, 2006 by Salvador FandiE<ntilde>o,
+E<lt>sfandino@yahoo.comE<gt>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.4 or,
