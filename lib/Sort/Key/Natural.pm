@@ -1,6 +1,6 @@
 package Sort::Key::Natural;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 require Exporter;
 
@@ -9,7 +9,11 @@ our @EXPORT_OK = qw( natkeysort
 		     natkeysort_inplace
 		     rnatkeysort
 		     rnatkeysort_inplace
-		     mkkey_natural );
+		     mkkey_natural
+		     natsort
+		     rnatsort
+		     natsort_inplace
+		     rnatsort_inplace );
 
 sub mkkey_natural {
     my $nat = @_ ? shift : $_;
@@ -32,6 +36,9 @@ use Sort::Key::Register nat => \&mkkey_natural, 'string';
 
 use Sort::Key::Maker natkeysort => 'nat';
 use Sort::Key::Maker rnatkeysort => '-nat';
+use Sort::Key::Maker natsort => \&mkkey_natural, 'str';
+use Sort::Key::Maker rnatsort => \&mkkey_natural, '-str';
+
 1;
 
 =head1 NAME
@@ -40,16 +47,22 @@ Sort::Key::Natural - fast natural sorting
 
 =head1 SYNOPSIS
 
-    use Sort::Key::Natural 'natkeysort';
+    use Sort::Key::Natural qw(natsort);
 
     my @data = qw(foo1 foo23 foo6 bar12 bar1
 		  foo bar2 bar-45 b-a-r-45);
 
-    my @sorted = natkeysort { $_ } @data;
+    my @sorted = natsort @data;
 
     print "@sorted\n";
     # prints:
     #   b-a-r-45 bar1 bar2 bar12 bar-45 foo foo1 foo6 foo23
+
+    use Sort::Key::Natural qw(natkeysort);
+
+    my @objects = (...);
+    my @sorted = natkeysort { $_->get_id } @objects;
+
 
 =head1 DESCRIPTION
 
@@ -96,23 +109,35 @@ the functions that can be imported from this module are:
 
 =over 4
 
-=item natkeysort { CALC_KEY($_) } @data;
+=item natsort @data
+
+returns the elements of C<@data> sorted in natural order.
+
+=item rnatsort @data
+
+returns the elements of C<@data> sorted in natural descending order.
+
+=item natkeysort { CALC_KEY($_) } @data
 
 returns the elements on C<@array> naturally sorted by the key
 resulting from applying C<CALC_KEY> to them.
 
-=item rnatkeysort { CALC_KEY($_) } @data;
+=item rnatkeysort { CALC_KEY($_) } @data
 
 is similar to C<natkeysort> but sorting the elements on descending
 order.
 
-=item natkeysort_inplace { CALC_KEY($_) } @data;
+=item natsort_inplace @data
 
-=item rnatkeysort_inplace { CALC_KEY($_) } @data;
+=item rnatsort_inplace @data
 
-these functions are similar to C<natsortkey> and C<rnatsortkey> but
-sort the array C<@data> in place.
+=item natkeysort_inplace { CALC_KEY($_) } @data
 
+=item rnatkeysort_inplace { CALC_KEY($_) } @data
+
+these functions are similar respectively to C<natsort>, C<rnatsort>,
+C<natsortkey> and C<rnatsortkey>, but they sort the array C<@data> in
+place.
 
 =item mkkey_natural $key
 
