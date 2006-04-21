@@ -1,6 +1,6 @@
 package Sort::Key;
 
-our $VERSION = '1.17';
+our $VERSION = '1.18';
 
 use 5.008;
 
@@ -216,7 +216,7 @@ Sort::Key - fastest way to sort things in perl
 
 =head1 DESCRIPTION
 
-Sort::Key provides a set of functions to sort list of values by some
+Sort::Key provides a set of functions to sort lists of values by some
 calculated key value.
 
 It is faster (usually B<much faster>) and uses less memory than other
@@ -341,8 +341,8 @@ Types accepted by default are:
   string, str, locale, loc, integer, int, number, num
 
 and support for additional types can be added via the non exportable
-L<register_type> subroutine (see below) or the more friendle interface
-available in L<Sort::Key::Register>.
+L<register_type> subroutine (see below) or the more friendly interface
+available from L<Sort::Key::Register>.
 
 Types can be preceded by a minus sign to indicate descending order.
 
@@ -399,7 +399,7 @@ as types supported natively, even for defining new types, i.e.:
 perl L<sort> function, L<integer>, L<locale>.
 
 Companion modules L<Sort::Key::Multi>, L<Sort::Key::Register>,
-L<Sort::Key::Maker> and L<Sort:Key::Util>.
+L<Sort::Key::Maker> and L<Sort::Key::Natural>.
 
 Other interesting Perl sorting modules are L<Sort::Maker> and
 L<Sort::Natural>.

@@ -1,5 +1,8 @@
 Revision history for Perl extension Sort::Key.
 
+1.18  21 Apr 2006
+	- some minor doc corrections
+
 1.17  6 Apr 2006
 	- corrected bug requiring unexistant module in test file.
 	- Sort::Key::Natural extended with new functions natsort and

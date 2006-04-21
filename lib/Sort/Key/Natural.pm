@@ -1,6 +1,6 @@
 package Sort::Key::Natural;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 require Exporter;
 
@@ -50,13 +50,13 @@ Sort::Key::Natural - fast natural sorting
     use Sort::Key::Natural qw(natsort);
 
     my @data = qw(foo1 foo23 foo6 bar12 bar1
-		  foo bar2 bar-45 b-a-r-45);
+		  foo bar2 bar-45 foomatic b-a-r-45);
 
     my @sorted = natsort @data;
 
     print "@sorted\n";
     # prints:
-    #   b-a-r-45 bar1 bar2 bar12 bar-45 foo foo1 foo6 foo23
+    #   b-a-r-45 bar1 bar2 bar12 bar-45 foo foo1 foo6 foo23 foomatic
 
     use Sort::Key::Natural qw(natkeysort);
 
@@ -66,10 +66,10 @@ Sort::Key::Natural - fast natural sorting
 
 =head1 DESCRIPTION
 
-This module extends the Sort::Key family of modules to support natural
-sorting.
+This module extends the L<Sort::Key> family of modules to support
+natural sorting.
 
-Under natural sorting, strings are splitted in word and number
+Under natural sorting, strings are splitted at word and number
 boundaries, and the resulting substrings are compared as follows:
 
 =over 4
@@ -93,7 +93,7 @@ splitting the string into its parts but not for sorting. For instance
 C<foo-bar-42> is broken in three substrings C<foo>, C<bar> and C<42>
 and after that the dashes are ignored.
 
-Once this module is loaded, the new type C<natural> (or C<nat>) will
+Also, once this module is loaded, the new type C<natural> (or C<nat>) will
 be available from L<Sort::Key::Maker>. For instance:
 
   use Sort::Key::Natural;
@@ -119,12 +119,12 @@ returns the elements of C<@data> sorted in natural descending order.
 
 =item natkeysort { CALC_KEY($_) } @data
 
-returns the elements on C<@array> naturally sorted by the key
-resulting from applying C<CALC_KEY> to them.
+returns the elements on C<@array> naturally sorted by the keys
+resulting from applying them C<CALC_KEY>.
 
 =item rnatkeysort { CALC_KEY($_) } @data
 
-is similar to C<natkeysort> but sorting the elements on descending
+is similar to C<natkeysort> but sorts the elements in descending
 order.
 
 =item natsort_inplace @data
@@ -151,7 +151,7 @@ provided it defaults to C<$_>
 
 L<Sort::Key>, L<Sort::Key::Maker>.
 
-Other module providing similar functionality is L<Sort::Natural>.
+Other module providing similar functionality is L<Sort::Naturally>.
 
 =head1 COPYRIGHT AND LICENSE
 
