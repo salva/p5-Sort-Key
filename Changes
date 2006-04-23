@@ -1,5 +1,9 @@
 Revision history for Perl extension Sort::Key.
 
+1.19  22 Apr 2006
+	- Add support for unsigned int keys
+	- ppport.h regenerated with latest Devel::PPPort
+
 1.18  21 Apr 2006
 	- some minor doc corrections
 

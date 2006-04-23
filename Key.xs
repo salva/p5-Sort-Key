@@ -1,3 +1,4 @@
+/* -*- Mode: -*- C */
 
 #define PERL_NO_GET_CONTEXT 1
 
@@ -55,6 +56,20 @@ ix_ri_cmp(pTHX_ IV *a, IV *b) {
     return iv1 < iv2 ? -1 : iv1 > iv2 ? 1 : 0;
 }
 
+static I32
+ix_u_cmp(pTHX_ UV *a, UV *b) {
+    UV uv1 = *a;
+    UV uv2 = *b;
+    return uv1 < uv2 ? -1 : uv1 > uv2 ? 1 : 0;
+}
+
+static I32
+ix_ru_cmp(pTHX_ UV *a, UV *b) {
+    UV uv1 = *b;
+    UV uv2 = *a;
+    return uv1 < uv2 ? -1 : uv1 > uv2 ? 1 : 0;
+}
+
 static void *v_alloc(pTHX_ IV n, IV lsize) {
     void *r;
     Newc(799, r, n<<lsize, char, void);
@@ -70,6 +85,10 @@ static void *av_alloc(pTHX_ IV n, IV lsize) {
 
 static void i_store(pTHX_ SV *v, void *to) {
     *((IV*)to)=SvIV(v);
+}
+
+static void u_store(pTHX_ SV *v, void *to) {
+    *((UV*)to)=SvUV(v);
 }
 
 static void n_store(pTHX_ SV *v, void *to) {
@@ -143,49 +162,61 @@ _keysort(pTHX_ IV type, SV *keygen, SV **values, I32 offset, I32 ax, IV len) {
 	    cmp = (COMPARE_t)&ix_sv_cmp;
 	    lsize = lsizeof(SV*);
 	    keys = av_alloc(aTHX_ len, lsize);
-	    store = sv_store;
+	    store = &sv_store;
 	    break;
 	case 1:
 	    cmp = (COMPARE_t)&ix_lsv_cmp;
 	    lsize = lsizeof(SV*);
 	    keys = av_alloc(aTHX_ len, lsize);
-	    store = sv_store;
+	    store = &sv_store;
 	    break;
 	case 2:
 	    cmp = (COMPARE_t)&ix_n_cmp;
 	    lsize = lsizeof(NV);
 	    keys = v_alloc(aTHX_ len, lsize);
-	    store = n_store;
+	    store = &n_store;
 	    break;
 	case 3:
 	    cmp = (COMPARE_t)&ix_i_cmp;
 	    lsize = lsizeof(IV);
 	    keys = v_alloc(aTHX_ len, lsize);
-	    store = i_store;
+	    store = &i_store;
+	    break;
+	case 4:
+	    cmp = (COMPARE_t)&ix_u_cmp;
+	    lsize = lsizeof(UV);
+	    keys = v_alloc(aTHX_ len, lsize);
+	    store = &u_store;
 	    break;
 	case 128:
 	    cmp = (COMPARE_t)&ix_rsv_cmp;
 	    lsize = lsizeof(SV*);
 	    keys = av_alloc(aTHX_ len, lsize);
-	    store = sv_store;
+	    store = &sv_store;
 	    break;
 	case 129:
 	    cmp = (COMPARE_t)&ix_rlsv_cmp;
 	    lsize = lsizeof(SV*);
 	    keys = av_alloc(aTHX_ len, lsize);
-	    store = sv_store;
+	    store = &sv_store;
 	    break;
 	case 130:
 	    cmp = (COMPARE_t)&ix_rn_cmp;
 	    lsize = lsizeof(NV);
 	    keys = v_alloc(aTHX_ len, lsize);
-	    store = n_store;
+	    store = &n_store;
 	    break;
 	case 131:
 	    cmp = (COMPARE_t)&ix_ri_cmp;
 	    lsize = lsizeof(IV);
 	    keys = v_alloc(aTHX_ len, lsize);
-	    store = i_store;
+	    store = &i_store;
+	    break;
+	case 132:
+	    cmp = (COMPARE_t)&ix_ru_cmp;
+	    lsize = lsizeof(UV);
+	    keys = v_alloc(aTHX_ len, lsize);
+	    store = &u_store;
 	    break;
 	default:
 	    croak("unsupported sort type %d", type);
@@ -359,6 +390,20 @@ ix_ri_mcmp(pTHX_ IV *a, IV *b) {
     return iv1 < iv2 ? -1 : iv1 > iv2 ? 1 : _secondkeycmp(aTHX_ a, b);
 }
 
+static I32
+ix_u_mcmp(pTHX_ UV *a, UV *b) {
+    UV uv1 = *a;
+    UV uv2 = *b;
+    return uv1 < uv2 ? -1 : uv1 > uv2 ? 1 : _secondkeycmp(aTHX_ a, b);
+}
+
+static I32
+ix_ru_mcmp(pTHX_ UV *a, UV *b) {
+    UV uv1 = *b;
+    UV uv2 = *a;
+    return uv1 < uv2 ? -1 : uv1 > uv2 ? 1 : _secondkeycmp(aTHX_ a, b);
+}
+
 static void
 _multikeysort(pTHX_ SV *keytypes, SV *keygen, SV *post,
 	      SV**values, I32 from_offset, I32 ax, I32 len) {
@@ -391,56 +436,69 @@ _multikeysort(pTHX_ SV *keytypes, SV *keygen, SV *post,
 		key->cmp = (COMPARE_t)&ix_sv_cmp;
 		key->lsize = lsizeof(SV*);
 		key->data = av_alloc(aTHX_ len, key->lsize);
-		store[i] = sv_store;
+		store[i] = &sv_store;
 		break;
 	    case 1:
 		if (i==0) cmp = (COMPARE_t)&ix_lsv_mcmp;
 		key->cmp = (COMPARE_t)&ix_lsv_cmp;
 		key->lsize = lsizeof(SV*);
 		key->data = av_alloc(aTHX_ len, key->lsize);
-		store[i] = sv_store;
+		store[i] = &sv_store;
 		break;
 	    case 2:
 		if (i==0) cmp = (COMPARE_t)&ix_n_mcmp;
 		key->cmp = (COMPARE_t)&ix_n_cmp;
 		key->lsize = lsizeof(NV);
 		key->data = v_alloc(aTHX_ len, key->lsize);
-		store[i] = n_store;
+		store[i] = &n_store;
 		break;
 	    case 3:
 		if (i==0) cmp = (COMPARE_t)&ix_i_mcmp;
 		key->cmp = (COMPARE_t)&ix_i_cmp;
 		key->lsize = lsizeof(IV);
 		key->data = v_alloc(aTHX_ len, key->lsize);
-		store[i] = i_store;
+		store[i] = &i_store;
+		break;
+	    case 4:
+		if (i==0) cmp = (COMPARE_t)&ix_u_mcmp;
+		key->cmp = (COMPARE_t)&ix_u_cmp;
+		key->lsize = lsizeof(UV);
+		key->data = v_alloc(aTHX_ len, key->lsize);
+		store[i] = &u_store;
 		break;
 	    case 128:
 		if (i==0) cmp = (COMPARE_t)&ix_rsv_mcmp;
 		key->cmp = (COMPARE_t)&ix_rsv_cmp;
 		key->lsize = lsizeof(SV*);
 		key->data = av_alloc(aTHX_ len, key->lsize);
-		store[i] = sv_store;
+		store[i] = &sv_store;
 		break;
 	    case 129:
 		if (i==0) cmp = (COMPARE_t)&ix_rlsv_mcmp;
 		key->cmp = (COMPARE_t)&ix_rlsv_cmp;
 		key->lsize = lsizeof(SV*);
 		key->data = av_alloc(aTHX_ len, key->lsize);
-		store[i] = sv_store;
+		store[i] = &sv_store;
 		break;
 	    case 130:
 		if (i==0) cmp = (COMPARE_t)&ix_rn_mcmp;
 		key->cmp = (COMPARE_t)&ix_rn_cmp;
 		key->lsize = lsizeof(NV);
 		key->data = v_alloc(aTHX_ len, key->lsize);
-		store[i] = n_store;
+		store[i] = &n_store;
 		break;
 	    case 131:
 		if (i==0) cmp = (COMPARE_t)&ix_ri_mcmp;
 		key->cmp = (COMPARE_t)&ix_ri_cmp;
 		key->lsize = lsizeof(IV);
 		key->data = v_alloc(aTHX_ len, key->lsize);
-		store[i] = i_store;
+		store[i] = &i_store;
+	    case 132:
+		if (i==0) cmp = (COMPARE_t)&ix_ru_mcmp;
+		key->cmp = (COMPARE_t)&ix_ru_cmp;
+		key->lsize = lsizeof(UV);
+		key->data = v_alloc(aTHX_ len, key->lsize);
+		store[i] = &u_store;
 		break;
 	    default:
 		croak("unsupported sort type %d", types[i]);
@@ -657,10 +715,12 @@ ALIAS:
     lkeysort = 1
     nkeysort = 2
     ikeysort = 3
+    ukeysort = 4
     rkeysort = 128
     rlkeysort = 129
     rnkeysort = 130
     rikeysort = 131
+    rukeysort = 132
 PPCODE:
     items--;
     if (items) {
@@ -679,10 +739,12 @@ ALIAS:
     lkeysort_inplace = 1
     nkeysort_inplace = 2
     ikeysort_inplace = 3
+    ukeysort_inplace = 4
     rkeysort_inplace = 128
     rlkeysort_inplace = 129
     rnkeysort_inplace = 130
     rikeysort_inplace = 131
+    rukeysort_inplace = 132
 PPCODE:
     if ((len=av_len(values)+1)) {
 	/* warn("ix=%d\n", ix); */
@@ -721,10 +783,12 @@ ALIAS:
     lsort = 1
     nsort = 2
     isort = 3
+    usort = 4
     rsort = 128
     rlsort = 129
     rnsort = 130
     risort = 131
+    rusort = 132
 PPCODE:
     if (items) {
 	_keysort(aTHX_ ix, 0, 0, 0, ax, items);
@@ -741,10 +805,12 @@ ALIAS:
     lsort_inplace = 1
     nsort_inplace = 2
     isort_inplace = 3
+    usort_inplace = 4
     rsort_inplace = 128
     rlsort_inplace = 129
     rnsort_inplace = 130
     risort_inplace = 131
+    rusort_inplace = 132
 PPCODE:
     if ((len=av_len(values)+1)) {
 	/* warn("ix=%d\n", ix); */

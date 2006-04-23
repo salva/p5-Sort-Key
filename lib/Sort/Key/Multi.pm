@@ -1,6 +1,6 @@
 package Sort::Key::Multi;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use warnings;
 use strict;
@@ -12,6 +12,7 @@ our @CARP_NOT = qw(Sort::Key);
 
 my %sub;
 my %type = qw( i integer
+	       u unsigned_integer
 	       n number
 	       s string
 	       l locale);
@@ -65,9 +66,9 @@ the keys as follows:
 
 =over 4
 
-+ C<i> indicates an integer key, C<n> indicates a numeric key, C<s>
-indicates a string key and C<l> indicates a string key that obeys
-locale order configuration.
++ C<i> indicates an integer key, C<u> indicates an unsigned integer
+key, C<n> indicates a numeric key, C<s> indicates a string key and
+C<l> indicates a string key that obeys locale order configuration.
 
 + Type characters can be prefixed by C<r> to indicate reverse order.
 

@@ -60,7 +60,8 @@ combination and exports them to the caller package.
 
 The key types natively accepted are:
 
-  string, str, locale, loc, integer, int, number, num
+  string, str, locale, loc, integer, int,
+  unsigned_integer, uint, number, num
 
 and support for other types can be added via L<Sort::Key::Register> (or
 also via L<Sort::Key::register_type()>).

@@ -1,6 +1,6 @@
 package Sort::Key;
 
-our $VERSION = '1.18';
+our $VERSION = '1.19';
 
 use 5.008;
 
@@ -13,9 +13,11 @@ require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw( nsort nsort_inplace
 		     isort isort_inplace
+		     usort usort_inplace
 		     rsort rsort_inplace
 		     rnsort rnsort_inplace
 		     risort risort_inplace
+		     rusort rusort_inplace
 
 		     keysort keysort_inplace
 		     rkeysort rkeysort_inplace
@@ -23,6 +25,8 @@ our @EXPORT_OK = qw( nsort nsort_inplace
 		     rnkeysort rnkeysort_inplace
 		     ikeysort ikeysort_inplace
 		     rikeysort rikeysort_inplace
+		     ukeysort ukeysort_inplace
+		     rukeysort rukeysort_inplace
 
 		     multikeysorter multikeysorter_inplace);
 
@@ -36,7 +40,8 @@ $DEBUG ||= 0;
 my %mktypes = ( s => 0,
 	        l => 1,
 		n => 2,
-		i => 3 );
+		i => 3,
+		u => 4 );
 
 
 sub _mks2n {
@@ -58,6 +63,8 @@ our %mkmap = qw(str s
 		lstr l
 		int i
 		integer i
+		uint u
+		unsigned_integer u
 		number n
 		num n);
 
@@ -268,11 +275,30 @@ works as nkeysort, comparing keys in reverse (or descending) numerical order.
 
 =item ikeysort { CALC_KEY } @array
 
-works as keysort but compares the keys as integers.
+works as keysort but compares the keys as integers (32 bits or more).
 
 =item rikeysort { CALC_KEY } @array
 
 works as ikeysort, but in reverse (or descending) order.
+
+=item ukeysort { CALC_KEY } @array
+
+works as keysort but compares the keys as unsigned integers (32 bits
+or more).
+
+For instance, it can be used to efficiently sort IP4 addresses:
+
+  my @data = qw(1.2.3.4 4.3.2.1 11.1.111.1 222.12.1.34
+                0.0.0.0 255.255.255.0) 127.0.0.1);
+
+  my @sorted = ukeysort {
+                   my @a = split /\./;
+                   (((($a[0] << 8) + $a[1] << 8) + $a[2] << 8) + $a[3])
+               } @data;
+
+=item rukeysort { CALC_KEY } @array
+
+works as ukeysort, but in reverse (or descending) order.
 
 =item keysort_inplace { CALC_KEY } @array
 
@@ -280,11 +306,15 @@ works as ikeysort, but in reverse (or descending) order.
 
 =item ikeysort_inplace { CALC_KEY } @array
 
+=item ukeysort_inplace { CALC_KEY } @array
+
 =item rkeysort_inplace { CALC_KEY } @array
 
 =item rnkeysort_inplace { CALC_KEY } @array
 
 =item rikeysort_inplace { CALC_KEY } @array
+
+=item rukeysort_inplace { CALC_KEY } @array
 
 work as the corresponding keysort functions but sorting the array
 inplace.
@@ -299,6 +329,10 @@ inplace.
 
 =item risort @array
 
+=item usort @array
+
+=item rusort @array
+
 =item rsort_inplace @array
 
 =item nsort_inplace @array
@@ -308,6 +342,10 @@ inplace.
 =item isort_inplace @array
 
 =item risort_inplace @array
+
+=item usort_inplace @array
+
+=item rusort_inplace @array
 
 are simplified versions of its keysort cousins. They use the own
 values as the sorting keys.
@@ -338,7 +376,8 @@ multikey sorting subroutine.
 
 Types accepted by default are:
 
-  string, str, locale, loc, integer, int, number, num
+  string, str, locale, loc, integer, int,
+  unsigned_integer, uint, number, num
 
 and support for additional types can be added via the non exportable
 L<register_type> subroutine (see below) or the more friendly interface

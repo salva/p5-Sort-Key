@@ -8,7 +8,7 @@ use warnings;
 use Test::More tests => 6;
 
 use Sort::Key::Maker nrs_keysort => sub { length($_), $_ }, qw(num -str);
-use Sort::Key::Register length => sub { length $_ }, qw(int);
+use Sort::Key::Register length => sub { length $_ }, qw(uint);
 use Sort::Key::Maker len_keysort => qw(length);
 
 sub random_str {
