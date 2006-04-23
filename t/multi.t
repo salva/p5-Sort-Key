@@ -7,6 +7,16 @@ use warnings;
 
 use Test::More tests => 6;
 
+my $unstable;
+BEGIN {
+    if ($] >= 5.008 ) {
+	eval "use sort 'stable'";
+    }
+    else {
+	$unstable = 1;
+    }
+}
+
 use Sort::Key::Maker nrs_keysort => sub { length($_), $_ }, qw(num -str);
 use Sort::Key::Register length => sub { length $_ }, qw(uint);
 use Sort::Key::Maker len_keysort => qw(length);
@@ -24,10 +34,15 @@ is_deeply([nrs_keysort @data], \@sorted, 'nrs');
 nrs_keysort_inplace @data;
 is_deeply(\@data, \@sorted, 'nrs inplace');
 
-my @sorted1 = sort { length $a <=> length $b } @data1;
-is_deeply([len_keysort {$_} @data1], \@sorted1, "post");
-len_keysort_inplace {$_} @data1;
-is_deeply(\@data1, \@sorted1, "post inplace");
+SKIP: {
+    skip "no stable sort available on this perl", 2 if $unstable;
+
+    my @sorted1 = sort { length $a <=> length $b } @data1;
+    is_deeply([len_keysort {$_} @data1], \@sorted1, "post");
+    len_keysort_inplace {$_} @data1;
+    is_deeply(\@data1, \@sorted1, "post inplace");
+
+};
 
 sub random_pair { [ rand, rand] }
 sub random_pair_pair { [random_pair, random_pair] };

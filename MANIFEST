@@ -3,6 +3,8 @@ Key.xs
 Makefile.PL
 MANIFEST
 ppport.h
+sort.h
+typemap
 README
 t/strings.t
 t/ints.t

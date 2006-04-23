@@ -1,8 +1,8 @@
 package Sort::Key;
 
-our $VERSION = '1.19';
+our $VERSION = '1.20';
 
-use 5.008;
+use 5.006;
 
 use strict;
 use warnings;

@@ -1,4 +1,4 @@
-/* -*- Mode: -*- C */
+/* -*- Mode: C -*- */
 
 #define PERL_NO_GET_CONTEXT 1
 
@@ -7,6 +7,10 @@
 #include "XSUB.h"
 
 #include "ppport.h"
+
+#if (PERL_SUBVERSION < 7)
+#include "sort.h"
+#endif
 
 static I32
 ix_sv_cmp(pTHX_ SV **a, SV **b) {
