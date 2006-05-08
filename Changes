@@ -1,5 +1,9 @@
 Revision history for Perl extension Sort::Key.
 
+1.21  8 May 2006
+        - critical bug corrected: reversed int was being handled as uint in
+          multikey sorting. Test case added.
+
 1.20  23 Apr 2006
 	- add support for perl 5.6 porting back sorting functions from
 	  perl 5.8.

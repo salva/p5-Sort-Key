@@ -125,11 +125,13 @@ static int ilog2(int i) {
    1 => locale
    2 => number
    3 => integer
+   4 => unsigned_integer
 
    128 => reverse string
    129 => reverse locale
    130 => reverse number
    131 => reverse integer
+   132 => reverse unsigned_integer
 
 */
 
@@ -497,6 +499,7 @@ _multikeysort(pTHX_ SV *keytypes, SV *keygen, SV *post,
 		key->lsize = lsizeof(IV);
 		key->data = v_alloc(aTHX_ len, key->lsize);
 		store[i] = &i_store;
+                break;
 	    case 132:
 		if (i==0) cmp = (COMPARE_t)&ix_ru_mcmp;
 		key->cmp = (COMPARE_t)&ix_ru_cmp;

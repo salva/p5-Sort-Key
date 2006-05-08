@@ -1,6 +1,6 @@
 package Sort::Key;
 
-our $VERSION = '1.20';
+our $VERSION = '1.21';
 
 use 5.006;
 

@@ -5,7 +5,7 @@ use warnings;
 
 # BEGIN {$Sort::Key::DEBUG=10};
 
-use Test::More tests => 6;
+use Test::More tests => 7;
 
 my $unstable;
 BEGIN {
@@ -61,3 +61,8 @@ use Sort::Key::Maker pp_keysort => sub { $_ }, 'pair_pair';
 is_deeply([pp_keysort @pps], \@ppss, 'pps');
 pp_keysort_inplace(@pps);
 is_deeply(\@pps, \@ppss, 'pps inplace');
+
+use Sort::Key::Multi 'ri_keysort';
+
+my @idata = (1, 4, -5, -6, -2, 1000, 234);
+is_deeply([ri_keysort { $_ } @idata], [sort { $b <=> $a } @idata], "ri_keysort");
