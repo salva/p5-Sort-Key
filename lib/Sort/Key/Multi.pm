@@ -1,6 +1,6 @@
 package Sort::Key::Multi;
 
-our $VERSION = '0.02';
+our $VERSION = '1.22';
 
 use warnings;
 use strict;
@@ -49,7 +49,7 @@ sub import {
 
 Sort::Key::Multi - simple multikey sorts
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     use Sort::Key::Multi qw(sikeysort);
     my @data = qw(foo0 foo1 bar34 bar0 bar34 bar33 doz4)
@@ -72,8 +72,9 @@ C<l> indicates a string key that obeys locale order configuration.
 
 + Type characters can be prefixed by C<r> to indicate reverse order.
 
-+ A number following a type character indicates that the key has to be
-repeated as many times.
++ A number following a type character indicates that the key type has
+to be repeated as many times (for instance C<i3> is equivalent to
+C<iii> and C<rs2> is equivalent to C<rsrs>).
 
 + Underscores (C<_>) can be freely used between type indicators.
 

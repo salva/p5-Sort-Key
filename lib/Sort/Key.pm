@@ -1,6 +1,6 @@
 package Sort::Key;
 
-our $VERSION = '1.21';
+our $VERSION = '1.22';
 
 use 5.006;
 
@@ -211,14 +211,18 @@ __END__
 
 =head1 NAME
 
-Sort::Key - fastest way to sort things in perl
+Sort::Key - the fastest way to sort anything in Perl
 
 =head1 SYNOPSIS
 
   use Sort::Key qw(keysort nkeysort ikeysort);
 
   @by_name = keysort { "$_->{surname} $_->{name}" } @people;
+
+  # sorting by a numeric key:
   @by_age = nkeysort { $_->{age} } @people;
+
+  # sorting by a numeric integer key:
   @by_sons = ikeysort { $_->{sons} } @people;
 
 =head1 DESCRIPTION
@@ -235,7 +239,36 @@ L<Sort::Key::Register>.
 
 =head2 FUNCTIONS
 
-The following functions can be imported from this module:
+This module provides a large number of sorting subroutines but
+they are all variations off the C<keysort> one:
+
+  @sorted = keysort { CALC_KEY($_) } @data
+
+that is conceptually equivalent to
+
+  @sorted = sort { CALC_KEY($a) cmp CALC_KEY($b) } @data
+
+and where C<CALC_KEY($_)> can be any expresion to extract the key
+value from C<$_> (not only a subroutine call).
+
+For instance, some variations are C<nkeysort> that performs a numeric
+comparison, C<rkeysort> that orders the data in descending order,
+C<ikeysort> and C<ukeysort> that are optimized versions of C<nkeysort>
+that can be used when the keys are integers or unsigned integers
+respectively, etc.
+
+Also, inplace versions of the sorters are provided. For instance
+
+  keysort_inplace { CALC_KEY($_) } @data
+
+that is equivalent to
+
+  @data = keysort { CALC_KEY($_) } @data
+
+but being (a bit) faster and using less memory.
+
+The full list of subroutines that can be imported from this module
+follows:
 
 =over 4
 
@@ -275,7 +308,8 @@ works as nkeysort, comparing keys in reverse (or descending) numerical order.
 
 =item ikeysort { CALC_KEY } @array
 
-works as keysort but compares the keys as integers (32 bits or more).
+works as keysort but compares the keys as integers (32 bits or more,
+no checking is performed for overflows).
 
 =item rikeysort { CALC_KEY } @array
 
