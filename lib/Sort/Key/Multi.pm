@@ -1,6 +1,6 @@
 package Sort::Key::Multi;
 
-our $VERSION = '1.22';
+our $VERSION = '1.23';
 
 use warnings;
 use strict;
@@ -98,6 +98,9 @@ example:
   my @data = qw(1.3.foo 1.3.bar 2.3.bar 1.4.bar 1.7.foo);
   my @s = i2rs_keysort { split /\./, $_ } @data;
 
+=head1 SEE ALSO
+
+For a more general multikey sorter generator see L<Sort::Key::Maker>.
 
 =head1 COPYRIGHT AND LICENSE
 

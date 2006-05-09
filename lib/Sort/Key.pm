@@ -1,6 +1,6 @@
 package Sort::Key;
 
-our $VERSION = '1.22';
+our $VERSION = '1.23';
 
 use 5.006;
 
@@ -231,7 +231,7 @@ Sort::Key provides a set of functions to sort lists of values by some
 calculated key value.
 
 It is faster (usually B<much faster>) and uses less memory than other
-alternatives implemented around perl sort function (ST, GRM, etc.).
+alternatives implemented around perl sort function (ST, GRT, etc.).
 
 Multikey sorting functionality is also provided via the companion
 modules L<Sort::Key::Multi>, L<Sort::Key::Maker> and
