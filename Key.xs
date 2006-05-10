@@ -8,7 +8,7 @@
 
 #include "ppport.h"
 
-#if (PERL_SUBVERSION < 7)
+#if (PERL_VERSION < 7)
 #include "sort.h"
 #endif
 
