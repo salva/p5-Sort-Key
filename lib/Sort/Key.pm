@@ -1,6 +1,6 @@
 package Sort::Key;
 
-our $VERSION = '1.24';
+our $VERSION = '1.25';
 
 use 5.006;
 
@@ -36,13 +36,13 @@ XSLoader::load('Sort::Key', $VERSION);
 our $DEBUG;
 $DEBUG ||= 0;
 
-
-my %mktypes = ( s => 0,
-	        l => 1,
-		n => 2,
-		i => 3,
-		u => 4 );
-
+# this hash is also used from Sort::Key::Multi to find out which
+# letters can be used as types:
+our %mktypes = ( s => 0,
+                 l => 1,
+                 n => 2,
+                 i => 3,
+                 u => 4 );
 
 sub _mks2n {
     if (my ($rev, $key)=$_[0]=~/^([-+]?)(.)$/) {
@@ -54,7 +54,6 @@ sub _mks2n {
     }
     die "internal error, bad key '$_[0]'";
 }
-
 
 our %mkmap = qw(str s
 		string s

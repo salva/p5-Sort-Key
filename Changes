@@ -1,5 +1,8 @@
 Revision history for Perl extension Sort::Key.
 
+1.25  17 May 2006
+        - Sort::Key::Multi was not accepting 'u' as a valid type.
+
 1.24  10 May 2006
         - corrected bug: loading sort.h for version 5.x.y when y < 7
           instead of x < 7 (bug reported by Reini Urban).

@@ -1,6 +1,6 @@
 package Sort::Key::Multi;
 
-our $VERSION = '1.23';
+our $VERSION = '1.25';
 
 use warnings;
 use strict;
@@ -17,12 +17,14 @@ my %type = qw( i integer
 	       s string
 	       l locale);
 
+my $one_char_types = join('', keys %Sort::Key::mktypes);
+
 sub import {
     shift;
     for my $name (@_) {
 	my $sub = $sub{$name};
 	unless (defined $sub) {
-	    my ($types, $inplace) = $name =~ /^((?:r?[snil]\d*_*)+)keysort((?:_?inplace)?)$/
+	    my ($types, $inplace) = $name =~ /^((?:r?[$one_char_types]\d*_*)+)keysort((?:_?inplace)?)$/o
 		or croak "invalid name for multikey sorter '$name'";
 	    my @types;
 	    while ($types =~ /(r?)(.)(\d*)_*/g) {

@@ -5,7 +5,7 @@ use warnings;
 
 # BEGIN {$Sort::Key::DEBUG=10};
 
-use Test::More tests => 7;
+use Test::More tests => 8;
 
 my $unstable;
 BEGIN {
@@ -66,3 +66,11 @@ use Sort::Key::Multi 'ri_keysort';
 
 my @idata = (1, 4, -5, -6, -2, 1000, 234);
 is_deeply([ri_keysort { $_ } @idata], [sort { $b <=> $a } @idata], "ri_keysort");
+
+use Sort::Key::Multi 'uu_keysort';
+
+is_deeply([uu_keysort { ord($_), ord(substr $_, 1) } @data],
+          [ sort { ord($a) <=> ord($b) or
+                     ord(substr $a, 1) <=> ord(substr $b,1)
+                   } @data],
+          "uu_keysort");
