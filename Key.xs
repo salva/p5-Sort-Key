@@ -76,7 +76,7 @@ ix_ru_cmp(pTHX_ UV *a, UV *b) {
 
 static void *v_alloc(pTHX_ IV n, IV lsize) {
     void *r;
-    Newc(799, r, n<<lsize, char, void);
+    Newxc(r, n<<lsize, char, void);
     SAVEFREEPV(r);
     return r;
 }
@@ -228,7 +228,7 @@ _keysort(pTHX_ IV type, SV *keygen, SV **values, I32 offset, I32 ax, IV len) {
 	    croak("unsupported sort type %d", type);
 	}
 
-	New(799, ixkeys, len, void*);
+	Newx(ixkeys, len, void*);
 	SAVEFREEPV(ixkeys);
 	if (keygen) {
 	    old_defsv=DEFSV;
@@ -241,8 +241,8 @@ _keysort(pTHX_ IV type, SV *keygen, SV **values, I32 offset, I32 ax, IV len) {
 		/* warn("values=%p SP=%p SP-len=%p, &ST(0)=%p\n", values, SP, SP-len, &ST(0)); */
 		ENTER;
 		SAVETMPS;
-		current = values ? values[i] : ST(i+offset);
-		DEFSV = current ? current : sv_2mortal(newSV(0));
+		current = values ? values[i] : ST(i + offset);
+		DEFSV = current ? current : sv_newmortal();
 		PUSHMARK(SP);
 		PUTBACK;
 		count = call_sv(keygen, G_SCALAR);
@@ -251,7 +251,7 @@ _keysort(pTHX_ IV type, SV *keygen, SV **values, I32 offset, I32 ax, IV len) {
 		    croak("wrong number of results returned from key generation sub");
 		result = POPs;
 		/* warn("key: %_\n", result); */
-		ixkeys[i] = target = ((char*)keys)+(i<<lsize);
+		ixkeys[i] = target = ((char*)keys) + (i << lsize);
 		(*store)(aTHX_ result, target);
 		FREETMPS;
 		LEAVE;
@@ -259,10 +259,10 @@ _keysort(pTHX_ IV type, SV *keygen, SV **values, I32 offset, I32 ax, IV len) {
 	    DEFSV=old_defsv;
 	}
 	else {
-	    for (i=0; i<len; i++) {
+	    for (i = 0; i < len; i++) {
 		void *target;
-		SV *current = values ? values[i] : ST(i+offset);
-		ixkeys[i] = target = ((char*)keys)+(i<<lsize);
+		SV *current = values ? values[i] : ST(i + offset);
+		ixkeys[i] = target = ((char*)keys) + (i << lsize);
 
 		(*store)(aTHX_
 			 current ? current : sv_2mortal(newSV(0)),
@@ -277,11 +277,11 @@ _keysort(pTHX_ IV type, SV *keygen, SV **values, I32 offset, I32 ax, IV len) {
 	    from = &ST(offset);
 	    to = &ST(0);
 	}
-	for(i=0; i<len; i++) {
-	  IV j = ( ((char*)(ixkeys[i])) - ((char*)keys) )>>lsize;
+	for(i = 0; i < len; i++) {
+            IV j = ( ((char*)(ixkeys[i])) - ((char*)keys) )>>lsize;
 	    ixkeys[i] = from[j];
 	}
-	for(i=0; i<len; i++) {
+	for(i = 0; i < len; i++) {
 	    to[i] = (SV*)ixkeys[i];
 	}
     }
@@ -429,9 +429,9 @@ _multikeysort(pTHX_ SV *keytypes, SV *keygen, SV *post,
 	SV **from, **to;
 	COMPARE_t cmp = (COMPARE_t)&_multikeycmp;
 
-	New(799, keys, nkeys+1, MK);
+	Newx(keys, nkeys+1, MK);
 	SAVEFREEPV(keys);
-	New(799, store, nkeys, STORE_t);
+	Newx(store, nkeys, STORE_t);
 	SAVEFREEPV(store);
 	
 	for(i=0; i<nkeys; i++) {
@@ -516,7 +516,7 @@ _multikeysort(pTHX_ SV *keytypes, SV *keygen, SV *post,
 	keys[nkeys].data = 0;
 	keys[nkeys].lsize = 0;
 	    
-	New(799, ixkeys, len, void*);
+	Newx(ixkeys, len, void*);
 	SAVEFREEPV(ixkeys);
 	old_defsv=DEFSV;
 	SAVE_DEFSV;

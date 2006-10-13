@@ -1,5 +1,8 @@
 Revision history for Perl extension Sort::Key.
 
+1.26  13 Oct 2006
+        - Use latest Devel::PPPort to regenerate ppport.h
+
 1.25  17 May 2006
         - Sort::Key::Multi was not accepting 'u' as a valid type.
 
