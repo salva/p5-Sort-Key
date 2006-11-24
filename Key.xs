@@ -152,14 +152,22 @@ _keysort(pTHX_ IV type, SV *keygen, SV **values, I32 offset, I32 ax, IV len) {
 	COMPARE_t cmp;
 	STORE_t store;
 
+#if (PERL_VERSION < 9)
+        int hints = PL_curcop->op_private;
+#else
+        int hints = CopHINTS_get(PL_curcop);
+#endif
+
+        /* fprintf (stderr, "hints=0x%x, int=0x%x, loc=0x%x\n", hints, HINT_INTEGER, HINT_LOCALE );fflush(stderr); */
+
 	switch(type) {
 	case 0:
 	case 128:
-	    if (PL_curcop->op_private & HINT_LOCALE) type = type | 128;
+	    if (hints & HINT_LOCALE) type = type | 128;
 	    break;
 	case 2:
 	case 130:
-	    if (PL_curcop->op_private & HINT_INTEGER) type = type + 1;
+	    if (hints & HINT_INTEGER) type = type | 1;
 	    break;
 	}
 
