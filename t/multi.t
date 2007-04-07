@@ -34,15 +34,10 @@ is_deeply([nrs_keysort @data], \@sorted, 'nrs');
 nrs_keysort_inplace @data;
 is_deeply(\@data, \@sorted, 'nrs inplace');
 
-SKIP: {
-    skip "no stable sort available on this perl", 2 if $unstable;
-
-    my @sorted1 = sort { length $a <=> length $b } @data1;
-    is_deeply([len_keysort {$_} @data1], \@sorted1, "post");
-    len_keysort_inplace {$_} @data1;
-    is_deeply(\@data1, \@sorted1, "post inplace");
-
-};
+my @sorted1 = @data1[ sort { length $data1[$a] <=> length $data1[$b] or $a <=> $b} 0.. $#data1];
+is_deeply([len_keysort {$_} @data1], \@sorted1, "post");
+len_keysort_inplace {$_} @data1;
+is_deeply(\@data1, \@sorted1, "post inplace");
 
 sub random_pair { [ rand, rand] }
 sub random_pair_pair { [random_pair, random_pair] };
@@ -70,7 +65,8 @@ is_deeply([ri_keysort { $_ } @idata], [sort { $b <=> $a } @idata], "ri_keysort")
 use Sort::Key::Multi 'uu_keysort';
 
 is_deeply([uu_keysort { ord($_), ord(substr $_, 1) } @data],
-          [ sort { ord($a) <=> ord($b) or
-                     ord(substr $a, 1) <=> ord(substr $b,1)
-                   } @data],
+          [@data[ sort { ord($data[$a]) <=> ord($data[$b]) or
+                         ord(substr $data[$a], 1) <=> ord(substr $data[$b],1) or
+                             $a <=> $b
+                   } 0..$#data ]],
           "uu_keysort");

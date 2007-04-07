@@ -1,5 +1,9 @@
 Revision history for Perl extension Sort::Key.
 
+1.28  7 Apr, 2007
+        - multi test was failing in 5.6.x perl because native sort is
+          not stable
+
 1.27  24 Nov 2006
         - Updated to work in 5.9.x perls (problem reported by Stefan
           Lidman).
