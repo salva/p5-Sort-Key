@@ -1,6 +1,6 @@
 package Sort::Key::Natural;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 require Exporter;
 
@@ -92,6 +92,11 @@ Spaces, symbols and non-printable characters are only considered for
 splitting the string into its parts but not for sorting. For instance
 C<foo-bar-42> is broken in three substrings C<foo>, C<bar> and C<42>
 and after that the dashes are ignored.
+
+Note, that the sorting is case sensitive. To do a case insensitive
+sort you have to convert the keys explicitly:
+
+  my @sorted = natkeysort { lc $_ } @data
 
 Also, once this module is loaded, the new type C<natural> (or C<nat>) will
 be available from L<Sort::Key::Maker>. For instance:

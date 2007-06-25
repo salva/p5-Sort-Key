@@ -1,11 +1,12 @@
 package Sort::Key::Multi;
 
-our $VERSION = '1.25';
+our $VERSION = '1.30';
 
 use warnings;
 use strict;
 
 use Sort::Key qw(multikeysorter multikeysorter_inplace);
+use Sort::Key::Types;
 
 use Carp;
 our @CARP_NOT = qw(Sort::Key);
@@ -17,7 +18,7 @@ my %type = qw( i integer
 	       s string
 	       l locale);
 
-my $one_char_types = join('', keys %Sort::Key::mktypes);
+my $one_char_types = join('', keys %Sort::Key::Types::mktypes);
 
 sub import {
     shift;

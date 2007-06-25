@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Sort-Key
-version:             1.28
+version:             1.30_01
 abstract:            the fastest way to sort anything in Perl
 license:             ~
 generated_by:        ExtUtils::MakeMaker version 6.32

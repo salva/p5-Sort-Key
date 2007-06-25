@@ -126,12 +126,14 @@ static int ilog2(int i) {
    2 => number
    3 => integer
    4 => unsigned_integer
-
+   5 => single precission float - not implemented
+   
    128 => reverse string
    129 => reverse locale
    130 => reverse number
    131 => reverse integer
    132 => reverse unsigned_integer
+   133 => reverse s. p. float - not implemented
 
 */
 
@@ -145,7 +147,6 @@ _keysort(pTHX_ IV type, SV *keygen, SV **values, I32 offset, I32 ax, IV len) {
 	void *keys;
 	void **ixkeys;
 	IV i;
-	SV *old_defsv;
 	SV **from, **to;
 
 	IV lsize;
@@ -239,8 +240,6 @@ _keysort(pTHX_ IV type, SV *keygen, SV **values, I32 offset, I32 ax, IV len) {
 	Newx(ixkeys, len, void*);
 	SAVEFREEPV(ixkeys);
 	if (keygen) {
-	    old_defsv=DEFSV;
-	    SAVE_DEFSV;
 	    for (i=0; i<len; i++) {
 		IV count;
 		SV *current;
@@ -249,8 +248,9 @@ _keysort(pTHX_ IV type, SV *keygen, SV **values, I32 offset, I32 ax, IV len) {
 		/* warn("values=%p SP=%p SP-len=%p, &ST(0)=%p\n", values, SP, SP-len, &ST(0)); */
 		ENTER;
 		SAVETMPS;
+                SAVE_DEFSV;
 		current = values ? values[i] : ST(i + offset);
-		DEFSV = current ? current : sv_newmortal();
+		DEFSV = sv_2mortal(current ? SvREFCNT_inc(current) : newSV(0));
 		PUSHMARK(SP);
 		PUTBACK;
 		count = call_sv(keygen, G_SCALAR);
@@ -264,7 +264,6 @@ _keysort(pTHX_ IV type, SV *keygen, SV **values, I32 offset, I32 ax, IV len) {
 		FREETMPS;
 		LEAVE;
 	    }
-	    DEFSV=old_defsv;
 	}
 	else {
 	    for (i = 0; i < len; i++) {
@@ -433,7 +432,6 @@ _multikeysort(pTHX_ SV *keytypes, SV *keygen, SV *post,
 	MK *keys;
 	STORE_t *store;
 	void **ixkeys;
-	SV *old_defsv;
 	SV **from, **to;
 	COMPARE_t cmp = (COMPARE_t)&_multikeycmp;
 
@@ -526,16 +524,15 @@ _multikeysort(pTHX_ SV *keytypes, SV *keygen, SV *post,
 	    
 	Newx(ixkeys, len, void*);
 	SAVEFREEPV(ixkeys);
-	old_defsv=DEFSV;
-	SAVE_DEFSV;
 	for (i=0; i<len; i++) {
 	    IV count;
 	    SV *current;
 	    void *target;
 	    ENTER;
 	    SAVETMPS;
+            SAVE_DEFSV;
 	    current = values ? values[i] : ST(i+from_offset);
-	    DEFSV = current ? current : sv_2mortal(newSV(0));
+	    DEFSV = sv_2mortal(current ? SvREFCNT_inc(current) : newSV(0));
 	    PUSHMARK(SP);
 	    PUTBACK;
 	    count = call_sv(keygen, G_ARRAY);
@@ -561,7 +558,6 @@ _multikeysort(pTHX_ SV *keytypes, SV *keygen, SV *post,
 	    FREETMPS;
 	    LEAVE;
 	}
-	DEFSV=old_defsv;
 	SAVEVPTR(PL_sortcop);
 	PL_sortcop = (OP*)keys;
 	sortsv((SV**)ixkeys, len, (SVCOMPARE_t)cmp);
@@ -740,6 +736,7 @@ PPCODE:
     items--;
     if (items) {
 	_keysort(aTHX_ ix, keygen, 0, 1, ax, items);
+        SPAGAIN;
 	SP = &ST(items-1);
     }
 
@@ -776,9 +773,8 @@ PPCODE:
 			    : newSV(0) ) );
 	    }
 	}
-
 	_keysort(aTHX_ ix, keygen, AvARRAY(values), 0, 0, len);
-
+        SPAGAIN;
 	if (magic_values) {
 	    int i;
 	    SV **values_array = AvARRAY(values);
@@ -807,6 +803,7 @@ ALIAS:
 PPCODE:
     if (items) {
 	_keysort(aTHX_ ix, 0, 0, 0, ax, items);
+        SPAGAIN;
 	SP = &ST(items-1);
     }
 
@@ -844,7 +841,7 @@ PPCODE:
 	}
 
 	_keysort(aTHX_ ix, 0, AvARRAY(values), 0, 0, len);
-
+        SPAGAIN;
 	if (magic_values) {
 	    int i;
 	    SV **values_array = AvARRAY(values);

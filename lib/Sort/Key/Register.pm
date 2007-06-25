@@ -1,6 +1,6 @@
 package Sort::Key::Register;
 
-our $VERSION = '0.14';
+our $VERSION = '1.30';
 
 use warnings;
 use strict;
@@ -11,10 +11,10 @@ sub import {
     my $class = shift;
     my $name = shift;
     if (@_ == 1) {
-	Sort::Key::register_type($name, undef, @_);
+	Sort::Key::Types::register_type($name, undef, @_);
     }
     else {
-	Sort::Key::register_type($name, @_);
+	Sort::Key::Types::register_type($name, @_);
     }
 }
 
