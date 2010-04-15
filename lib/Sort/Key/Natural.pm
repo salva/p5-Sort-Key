@@ -2,6 +2,9 @@ package Sort::Key::Natural;
 
 our $VERSION = '0.04';
 
+use strict;
+use warnings;
+
 require Exporter;
 
 our @ISA = qw( Exporter );
@@ -15,10 +18,19 @@ our @EXPORT_OK = qw( natkeysort
 		     natsort_inplace
 		     rnatsort_inplace );
 
+require locale;
+
 sub mkkey_natural {
     my $nat = @_ ? shift : $_;
-
-    my @parts = $nat =~ /\d+|[[:alpha:]]+/g;
+    my @parts = do {
+        if ((caller 0)[8] & $locale::hint_bits) {
+            use locale;
+            $nat =~ /\d+|\p{IsAlpha}+/g;
+        }
+        else {
+            $nat =~ /\d+|\p{IsAlpha}+/g;
+        }
+    };
     for (@parts) {
 	if (/^\d/) {
 	    s/^0+//;
