@@ -16,7 +16,18 @@ our @EXPORT_OK = qw( natkeysort
 		     natsort
 		     rnatsort
 		     natsort_inplace
-		     rnatsort_inplace );
+		     rnatsort_inplace 
+
+                     natwfkeysort
+		     natwfkeysort_inplace
+		     rnatwfkeysort
+		     rnatwfkeysort_inplace
+		     mkkey_natural_with_floats
+		     natwfsort
+		     rnatwfsort
+		     natwfsort_inplace
+		     rnatwfsort_inplace );
+
 
 require locale;
 
@@ -51,6 +62,44 @@ use Sort::Key::Maker rnatkeysort => '-nat';
 use Sort::Key::Maker natsort => \&mkkey_natural, 'str';
 use Sort::Key::Maker rnatsort => \&mkkey_natural, '-str';
 
+sub mkkey_natural_with_floats {
+    my $nat = @_ ? shift : $_;
+    my @parts = do {
+        if ((caller 0)[8] & $locale::hint_bits) {
+            use locale;
+            $nat =~ /[+\-]?\d+(?:\.\d*)?|\p{IsAlpha}+/g;
+        }
+        else {
+            $nat =~ /[+\-]?\d+(?:\.\d*)?|\p{IsAlpha}+/g;
+        }
+    };
+    for (@parts) {
+        if (my ($sign, $number, $dec) = /^([+-]?)(\d+)(?:\.(\d*))?$/) {
+            $number =~ s/^0+//;
+            $dec = '' unless defined $dec;
+            $dec =~ s/0+$//;
+	    my $len = length $number;
+	    my $nines = int ($len / 9);
+	    my $rest = $len - 9 * $nines;
+            $_ = ('9' x $nines) . $rest . $number . $dec;
+            if ($sign eq '-') {
+                tr/0123456789/9876543210/;
+                $_ = "-$_";
+            }
+	}
+    }
+    return join("\0", @parts);
+}
+
+use Sort::Key::Register natural_with_floats => \&mkkey_natural_with_floats, 'string';
+use Sort::Key::Register natwf => \&mkkey_natural_with_floats, 'string';
+
+use Sort::Key::Maker natwfkeysort => 'natwf';
+use Sort::Key::Maker rnatwfkeysort => '-natwf';
+use Sort::Key::Maker natwfsort => \&mkkey_natural_with_floats, 'str';
+use Sort::Key::Maker rnatwfsort => \&mkkey_natural_with_floats, '-str';
+
+
 1;
 
 =head1 NAME
@@ -82,7 +131,8 @@ This module extends the L<Sort::Key> family of modules to support
 natural sorting.
 
 Under natural sorting, strings are splitted at word and number
-boundaries, and the resulting substrings are compared as follows:
+boundaries, and the resulting substrings
+are compared as follows:
 
 =over 4
 
@@ -120,6 +170,10 @@ creates a multikey sorter C<i_rnat_keysort> accepting two keys, the
 first to be compared as an integer and the second in natural
 descending order.
 
+There is also an alternative set of natural sorting functions that
+recognize floating point numbers. They use the key type C<natwf>
+(abreviation of C<natural_with_floats>).
+
 =head2 FUNCTIONS
 
 the functions that can be imported from this module are:
@@ -156,11 +210,39 @@ these functions are similar respectively to C<natsort>, C<rnatsort>,
 C<natsortkey> and C<rnatsortkey>, but they sort the array C<@data> in
 place.
 
-=item mkkey_natural $key
+=item $key = mkkey_natural $string
 
-transforms key C<$key> in a way that when sorted with L<Sort::Key>
-keysort results in a natural sort. If the argument C<$key> is not
-provided it defaults to C<$_>
+given C<$string>, returns a key that can be compared lexicographically
+to another key obtained in the same manner, results in the same order
+as comparing the former strings as in the natural order.
+
+If the argument C<$key> is not provided it defaults to C<$_>.
+
+=item natwfsort @data
+
+=item rnatwfsort @data
+
+=item natkeywfsort { CALC_KEY($_) } @data
+
+=item rnatkeywfsort { CALC_KEY($_) } @data
+
+=item natwfsort_inplace @data
+
+=item rnatwfsort_inplace @data
+
+=item natkeywfsort_inplace { CALC_KEY($_) } @data
+
+=item rnatkeywfsort_inplace { CALC_KEY($_) } @data
+
+=item mkkey_natural_with_floats $key
+
+this ugly named set of functions perform in the same way as its
+s/natwf/nat/ counterpart with the difference that they honor floating
+point numbers embeded inside the strings.
+
+In this context a floating point number is a string matching the
+regular expression C</[+\-]?\d+(\.\d*)?/>. Note that numbers with an
+exponent part (i.e. C<1.12E-12>) are not recognized as such.
 
 =back
 
@@ -172,7 +254,7 @@ Other module providing similar functionality is L<Sort::Naturally>.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2006 by Salvador FandiE<ntilde>o,
+Copyright (C) 2006, 2012 by Salvador FandiE<ntilde>o,
 E<lt>sfandino@yahoo.comE<gt>.
 
 This library is free software; you can redistribute it and/or modify

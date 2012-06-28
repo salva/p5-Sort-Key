@@ -1,5 +1,8 @@
 Revision history for Perl extension Sort::Key.
 
+1.31  28 Jun, 2012
+        - add support for natwf keys (natural with floats)
+
 1.30_01 22 Jun, 2007
         - move types functionality to Sort::Key::Types in order to
           allow it to be used from other modules as Sort::Merger.
