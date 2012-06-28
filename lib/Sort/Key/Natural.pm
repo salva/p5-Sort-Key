@@ -82,7 +82,7 @@ sub mkkey_natural_with_floats {
 	    my $nines = int ($len / 9);
 	    my $rest = $len - 9 * $nines;
             $_ = ('9' x $nines) . $rest . $number . $dec;
-            if ($sign eq '-') {
+            if ($sign eq '-' and $_ ne '0') {
                 tr/0123456789/9876543210/;
                 $_ = "-$_";
             }
@@ -243,6 +243,9 @@ point numbers embeded inside the strings.
 In this context a floating point number is a string matching the
 regular expression C</[+\-]?\d+(\.\d*)?/>. Note that numbers with an
 exponent part (i.e. C<1.12E-12>) are not recognized as such.
+
+Note also that numbers without an integer part (i.e. C<.2> or C<-.12>)
+are not supported either.
 
 =back
 
