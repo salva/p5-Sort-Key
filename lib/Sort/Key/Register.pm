@@ -40,8 +40,8 @@ Sort::Key::Register - tell Sort::Key how to sort new data types.
 
 =head1 DESCRIPTION
 
-Sort::Key::Register allows to register new data types with Sort::Key
-so that they can be sorted as natively supported ones.
+Sort::Key::Register allows one to register new data types with
+Sort::Key so that they can be sorted as natively supported ones.
 
 It works as a pragma module and doesn't export any function, all its
 functionality is provided via C<use>:

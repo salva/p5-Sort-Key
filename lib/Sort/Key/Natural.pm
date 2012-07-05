@@ -130,9 +130,8 @@ Sort::Key::Natural - fast natural sorting
 This module extends the L<Sort::Key> family of modules to support
 natural sorting.
 
-Under natural sorting, strings are splitted at word and number
-boundaries, and the resulting substrings
-are compared as follows:
+Under natural sorting, strings are split at word and number
+boundaries, and the resulting substrings are compared as follows:
 
 =over 4
 

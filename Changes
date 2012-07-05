@@ -1,5 +1,9 @@
 Revision history for Perl extension Sort::Key.
 
+1.33
+        - spelling errors corrected (contributed by Florian from
+          CPAN).
+
 1.32  29 Jun, 2012
         - natwf was not handling correctly negative zero (-0)
 

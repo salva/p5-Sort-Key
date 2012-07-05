@@ -116,7 +116,7 @@ that is conceptually equivalent to
 
   @sorted = sort { CALC_KEY($a) cmp CALC_KEY($b) } @data
 
-and where C<CALC_KEY($_)> can be any expresion to extract the key
+and where C<CALC_KEY($_)> can be any expression to extract the key
 value from C<$_> (not only a subroutine call).
 
 For instance, some variations are C<nkeysort> that performs a numeric
