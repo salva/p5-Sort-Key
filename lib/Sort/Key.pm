@@ -101,7 +101,7 @@ calculated key value.
 It is faster (usually B<much faster>) and uses less memory than other
 alternatives implemented around perl sort function (ST, GRT, etc.).
 
-Multikey sorting functionality is also provided via the companion
+Multi-key sorting functionality is also provided via the companion
 modules L<Sort::Key::Multi>, L<Sort::Key::Maker> and
 L<Sort::Key::Register>.
 
@@ -156,8 +156,8 @@ This function honours the C<use locale> pragma.
 
 =item nkeysort { CALC_KEY } @array
 
-similar to keysort but compares the keys numerically instead of
-as strings.
+similar to C<keysort> but compares the keys numerically instead of as
+strings.
 
 This function honours the C<use integer> pragma, i.e.:
 
@@ -172,20 +172,20 @@ prints
 
 =item rnkeysort { CALC_KEY } @array
 
-works as nkeysort, comparing keys in reverse (or descending) numerical order.
+works as C<nkeysort>, comparing keys in reverse (or descending) numerical order.
 
 =item ikeysort { CALC_KEY } @array
 
-works as keysort but compares the keys as integers (32 bits or more,
+works as C<keysort> but compares the keys as integers (32 bits or more,
 no checking is performed for overflows).
 
 =item rikeysort { CALC_KEY } @array
 
-works as ikeysort, but in reverse (or descending) order.
+works as C<ikeysort>, but in reverse (or descending) order.
 
 =item ukeysort { CALC_KEY } @array
 
-works as keysort but compares the keys as unsigned integers (32 bits
+works as C<keysort> but compares the keys as unsigned integers (32 bits
 or more).
 
 For instance, it can be used to efficiently sort IP4 addresses:
@@ -200,7 +200,7 @@ For instance, it can be used to efficiently sort IP4 addresses:
 
 =item rukeysort { CALC_KEY } @array
 
-works as ukeysort, but in reverse (or descending) order.
+works as C<ukeysort>, but in reverse (or descending) order.
 
 =item keysort_inplace { CALC_KEY } @array
 
@@ -218,7 +218,7 @@ works as ukeysort, but in reverse (or descending) order.
 
 =item rukeysort_inplace { CALC_KEY } @array
 
-work as the corresponding keysort functions but sorting the array
+work as the corresponding C<keysort> functions but sorting the array
 inplace.
 
 =item rsort @array
@@ -249,7 +249,7 @@ inplace.
 
 =item rusort_inplace @array
 
-are simplified versions of its keysort cousins. They use the own
+are simplified versions of its C<keysort> cousins. They use the own
 values as the sorting keys.
 
 For instance those constructions are equivalent:
@@ -269,12 +269,12 @@ For instance those constructions are equivalent:
 
 =item multikeysorter_inplace(\&genkeys, @types)
 
-are the low level interface to the multikey sorting functionality
+are the low level interface to the multi-key sorting functionality
 (normally, you should use L<Sort::Key::Maker> and
 L<Sort::Key::Register> or L<Sort::Key::Multi> instead).
 
 They get a list of keys descriptions and return a reference to a
-multikey sorting subroutine.
+multi-key sorting subroutine.
 
 Types accepted by default are:
 
@@ -288,7 +288,7 @@ friendly interface available from L<Sort::Key::Register>.
 Types can be preceded by a minus sign to indicate descending order.
 
 If the first argument is a reference to a subroutine it is used as the
-multikey extraction function. If not, the generated sorters
+multi-key extraction function. If not, the generated sorters
 expect one as their first argument.
 
 Example:

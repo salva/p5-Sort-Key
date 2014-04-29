@@ -25,7 +25,7 @@ __END__
 
 Sort::Key::Register - tell Sort::Key how to sort new data types.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
   use Sort::Key::Register Person =>
       sub { $_->surname, $_->name },
@@ -64,7 +64,7 @@ name, you should qualify them with the package name.
 
 registers type C<$name>.
 
-C<&multikeygen> is the multikey extraction function for the type and
+C<&multikeygen> is the multi-key extraction function for the type and
 C<@keytypes> are the types of the extracted keys.
 
 =item use Sort::Key::Register $name => $keytype;

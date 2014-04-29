@@ -1,6 +1,9 @@
 Revision history for Perl extension Sort::Key.
 
-1.33
+1.33  
+        - remove pod tests from distribution
+        - fix names of natwfkeysort functions in Sort::Key::Natural
+          documentation
         - spelling errors corrected (contributed by Florian from
           CPAN).
 
