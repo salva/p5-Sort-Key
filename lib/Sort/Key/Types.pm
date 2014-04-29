@@ -216,7 +216,7 @@ L<Sort::Key>, L<Sort::Key::Merger>, L<Sort::Key::Register>.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2005-2007 by Salvador FandiE<ntilde>o,
+Copyright (C) 2005-2007, 2014 by Salvador FandiE<ntilde>o,
 E<lt>sfandino@yahoo.comE<gt>.
 
 This library is free software; you can redistribute it and/or modify

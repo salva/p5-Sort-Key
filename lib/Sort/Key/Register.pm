@@ -85,7 +85,7 @@ Salvador FandiE<ntilde>o, E<lt>sfandino@yahoo.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2005 by Salvador FandiE<ntilde>o
+Copyright (C) 2005, 2014 by Salvador FandiE<ntilde>o
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.4 or,

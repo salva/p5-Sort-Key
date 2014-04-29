@@ -256,7 +256,7 @@ Other module providing similar functionality is L<Sort::Naturally>.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2006, 2012 by Salvador FandiE<ntilde>o,
+Copyright (C) 2006, 2012, 2014 by Salvador FandiE<ntilde>o,
 E<lt>sfandino@yahoo.comE<gt>.
 
 This library is free software; you can redistribute it and/or modify

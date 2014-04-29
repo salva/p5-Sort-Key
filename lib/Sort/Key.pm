@@ -338,7 +338,7 @@ Amazon Wish List: L<http://amzn.com/w/1WU1P6IR5QZ42>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2005-2007, 2012 by Salvador FandiE<ntilde>o,
+Copyright (C) 2005-2007, 2012, 2014 by Salvador FandiE<ntilde>o,
 E<lt>sfandino@yahoo.comE<gt>.
 
 This library is free software; you can redistribute it and/or modify
