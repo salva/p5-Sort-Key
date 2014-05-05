@@ -1,4 +1,4 @@
-package Sort::Key::Types;
+ackage Sort::Key::Types;
 
 our $VERSION = '1.30';
 
@@ -154,7 +154,9 @@ sub register_type {
 
 __END__
 
-=head1 Sort::Key::Types - handle Sort::Key data types
+=head1 NAME
+
+Sort::Key::Types - handle Sort::Key data types
 
 =head1 SYNOPSIS
 

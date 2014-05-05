@@ -1,14 +1,15 @@
 Revision history for Perl extension Sort::Key.
 
 1.34
+        - pod fix (contributed by Florian Schlichting from Debian)
         - remove references to abandoned Sort::Key::External
 
 1.33  Apr 29, 2014
         - remove pod tests from distribution
         - fix names of natwfkeysort functions in Sort::Key::Natural
           documentation
-        - spelling errors corrected (contributed by Florian from
-          CPAN).
+        - spelling errors corrected (contributed by Florian
+          Schlichting from Debian)
 
 1.32  Jun 29, 2012
         - natwf was not handling correctly negative zero (-0)
