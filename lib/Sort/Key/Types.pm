@@ -1,4 +1,4 @@
-ackage Sort::Key::Types;
+package Sort::Key::Types;
 
 our $VERSION = '1.30';
 
