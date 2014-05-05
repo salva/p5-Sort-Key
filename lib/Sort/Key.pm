@@ -1,6 +1,6 @@
 package Sort::Key;
 
-our $VERSION = '1.33';
+our $VERSION = '1.34';
 
 use 5.006;
 
@@ -312,9 +312,6 @@ L<Sort::Key::Maker> and L<Sort::Key::Natural>.
 
 L<Sort::Key::IPv4>, L<Sort::Key::DateTime> and L<Sort::Key::OID>
 modules add support for additional datatypes to Sort::Key.
-
-L<Sort::Key::External> allows to sort huge lists that do not fit in
-the available memory.
 
 Other interesting Perl sorting modules are L<Sort::Maker>,
 L<Sort::Naturally> and L<Sort::External>.
