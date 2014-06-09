@@ -25,7 +25,7 @@ our %mktypes = ( s => 0,
 sub _mks2n {
     if (my ($rev, $key)=$_[0]=~/^([-+]?)(.)$/) {
 	exists $mktypes{$key}
-	    or croak "invalid multikey type '$_[0]'";
+	    or croak "invalid multi-key type '$_[0]'";
 	my $n = $mktypes{$key};
 	$n+=128 if $rev eq '-';
 	return $n
@@ -154,7 +154,9 @@ sub register_type {
 
 __END__
 
-=head1 Sort::Key::Types - handle Sort::Key data types
+=head1 NAME
+
+Sort::Key::Types - handle Sort::Key data types
 
 =head1 SYNOPSIS
 
@@ -179,12 +181,12 @@ The following functions are provided:
 =item Sort::Key::register_type($name, \&gensubkeys, @subkeystypes)
 
 registers a new datatype named C<$name> defining how to convert it to
-a multikey.
+a multi-key.
 
 C<&gensubkeys> should convert the object of type C<$name> passed on
-C<$_> to a list of values composing the multikey.
+C<$_> to a list of values composing the multi-key.
 
-C<@subkeystypes> is the list of types for the generated multikeys.
+C<@subkeystypes> is the list of types for the generated multi-keys.
 
 For instance:
 
@@ -216,7 +218,7 @@ L<Sort::Key>, L<Sort::Key::Merger>, L<Sort::Key::Register>.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2005-2007 by Salvador FandiE<ntilde>o,
+Copyright (C) 2005-2007, 2014 by Salvador FandiE<ntilde>o,
 E<lt>sfandino@yahoo.comE<gt>.
 
 This library is free software; you can redistribute it and/or modify

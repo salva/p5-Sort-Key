@@ -50,7 +50,7 @@ sub import {
 
 =head1 NAME
 
-Sort::Key::Multi - simple multikey sorts
+Sort::Key::Multi - simple multi-key sorts
 
 =head1 SYNOPSIS
 
@@ -60,7 +60,7 @@ Sort::Key::Multi - simple multikey sorts
 
 =head1 DESCRIPTION
 
-Sort::Key::Multi creates multikey sorting subroutines and exports them
+Sort::Key::Multi creates multi-key sorting subroutines and exports them
 to the caller package.
 
 The names of the sorters are of the form C<xxxkeysort> or
@@ -83,7 +83,7 @@ C<iii> and C<rs2> is equivalent to C<rsrs>).
 
 =back
 
-For instace:
+For instance:
 
    use Key::Sort::Multi qw(iirskeysort
                            i2rskeysort
@@ -103,11 +103,11 @@ example:
 
 =head1 SEE ALSO
 
-For a more general multikey sorter generator see L<Sort::Key::Maker>.
+For a more general multi-key sorter generator see L<Sort::Key::Maker>.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2006 by Salvador FandiE<ntilde>o
+Copyright (C) 2006, 2014 by Salvador FandiE<ntilde>o
 E<lt>sfandino@yahoo.comE<gt>
 
 This library is free software; you can redistribute it and/or modify
