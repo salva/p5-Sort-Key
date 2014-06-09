@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+# See LinkeIn discussion:
+# https://www.linkedin.com/groupItem?view=&gid=106254&type=member&item=5881611740927528962&trk=my_groups-b-title
+
 use strict;
 use warnings;
 use Benchmark 'cmpthese';
