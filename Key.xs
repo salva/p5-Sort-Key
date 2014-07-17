@@ -5,8 +5,8 @@
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
-
 #include "ppport.h"
+//#include "cop.h"
 
 #if (PERL_VERSION < 7)
 #include "sort.h"
@@ -240,6 +240,25 @@ _keysort(pTHX_ IV type, SV *keygen, SV **values, I32 offset, I32 ax, IV len) {
 	Newx(ixkeys, len, void*);
 	SAVEFREEPV(ixkeys);
 	if (keygen) {
+            I32 gimme = G_SCALAR;
+            SV **values1 = (values ? values : &(ST(offset)));
+            HV *st;
+            GV *gvp;
+            CV *cv = sv_2cv(keygen, &st, &gvp, 0);
+            if (!cv) Perl_croak(aTHX_ "CODE reference expected for key extraction sub");
+#ifdef dMULTICALL
+            dMULTICALL;
+            SAVESPTR(GvSV(PL_defgv));
+            PUSH_MULTICALL(cv);
+            for (i = 0; i < len; i++) {
+                void *target;
+                GvSV(PL_defgv) = values1[i];
+                MULTICALL;
+                ixkeys[i] = target = ((char*)keys) + (i << lsize);
+                (*store)(aTHX_ *PL_stack_sp, target);
+            }
+            POP_MULTICALL;
+#else
 	    for (i=0; i<len; i++) {
 		IV count;
 		SV *current;
@@ -264,6 +283,7 @@ _keysort(pTHX_ IV type, SV *keygen, SV **values, I32 offset, I32 ax, IV len) {
 		FREETMPS;
 		LEAVE;
 	    }
+#endif
 	}
 	else {
 	    for (i = 0; i < len; i++) {
