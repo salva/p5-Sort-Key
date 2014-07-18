@@ -8,6 +8,7 @@ use warnings;
 use Benchmark 'cmpthese';
 use Sort::Key qw(keysort);
 use HTTP::Tiny;
+use 5.014;
 
 my $n = shift @ARGV // 100_000;
 
@@ -75,8 +76,32 @@ cmpthese (10, {
                sk  => sub {
                    my @sorted = keysort { join '.', reverse split /\./ } @domain;
                },
+               sk_2 => sub {
+                   my @sorted = keysort { my $k = reverse $_;
+                                          $k =~ s/([^\.]+)/reverse $1/eg;
+                                          $k } @domain;
+               },
+               sk_3 => sub {
+                   my @sorted = keysort { reverse s/([^\.]+)/reverse $1/reg } @domain;
+               },
+               sk_4 => sub {
+                   my @sorted = keysort {
+                       my $k='';
+                       $k .= '.' . reverse $1 for reverse =~ /([^\.]+)/g;
+                       $k;
+                   } @domain;
+               },
+               inplace => sub {
+                   my @sorted = map scalar(reverse $_), @domain;
+                   s/([^\.]+)/reverse $1/ge for @sorted;
+                   @sorted = sort @sorted;
+                   for (@sorted) {
+                       s/([^\.]+)/reverse $1/ge;
+                       $_ = reverse;
+                   }
+               },
               }
-         );
+              );
 
 
 __END__
