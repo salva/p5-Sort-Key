@@ -240,25 +240,38 @@ _keysort(pTHX_ IV type, SV *keygen, SV **values, I32 offset, I32 ax, IV len) {
 	Newx(ixkeys, len, void*);
 	SAVEFREEPV(ixkeys);
 	if (keygen) {
-            I32 gimme = G_SCALAR;
-            SV **values1 = (values ? values : &(ST(offset)));
             HV *st;
             GV *gvp;
             CV *cv = sv_2cv(keygen, &st, &gvp, 0);
             if (!cv) Perl_croak(aTHX_ "CODE reference expected for key extraction sub");
-#ifdef dMULTICALL
-            dMULTICALL;
-            SAVESPTR(GvSV(PL_defgv));
-            PUSH_MULTICALL(cv);
-            for (i = 0; i < len; i++) {
-                void *target;
-                GvSV(PL_defgv) = values1[i];
-                MULTICALL;
-                ixkeys[i] = target = ((char*)keys) + (i << lsize);
-                (*store)(aTHX_ *PL_stack_sp, target);
+#if 0
+/* #if PERL_VERSION >= 14 */
+/* This multicall stuff is fully broken, forget about it */
+
+            if (SvTRUE(get_sv("Sort::Key::multicall", GV_ADD))) {
+                dMULTICALL;
+                I32 gimme = G_SCALAR;
+                SV **values2 = values ? values : &(ST(offset));
+                PUSH_MULTICALL(cv);
+                SAVE_DEFSV;
+                for (i = 0; i < len; i++) {
+                    void *target = ((char*)keys) + (i << lsize);
+                    SV *current = values2[i];
+                    DEFSV = current ? current : sv_newmortal();
+                    ENTER;
+                    MULTICALL;
+                    SPAGAIN;
+                    (*store)(aTHX_ *PL_stack_sp, target);
+                    ixkeys[i] = target;
+                    LEAVE;
+                    fprintf(stderr, "SV: %p!, flags: 0x%x, count: %u\n", *PL_stack_sp, (unsigned int)SvFLAGS(*PL_stack_sp), (unsigned int)SvREFCNT(*PL_stack_sp)); fflush(stderr);
+
+
+                }
+                POP_MULTICALL;
             }
-            POP_MULTICALL;
-#else
+            else
+#endif
 	    for (i=0; i<len; i++) {
 		IV count;
 		SV *current;
@@ -283,7 +296,6 @@ _keysort(pTHX_ IV type, SV *keygen, SV **values, I32 offset, I32 ax, IV len) {
 		FREETMPS;
 		LEAVE;
 	    }
-#endif
 	}
 	else {
 	    for (i = 0; i < len; i++) {
