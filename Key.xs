@@ -282,7 +282,7 @@ _keysort(pTHX_ IV type, SV *keygen, SV **values, I32 offset, I32 ax, IV len) {
 		SAVETMPS;
                 SAVE_DEFSV;
 		current = values ? values[i] : ST(i + offset);
-		DEFSV = sv_2mortal(current ? SvREFCNT_inc(current) : newSV(0));
+		DEFSV = (current ? current : sv_newmortal());
 		PUSHMARK(SP);
 		PUTBACK;
 		count = call_sv(keygen, G_SCALAR);
