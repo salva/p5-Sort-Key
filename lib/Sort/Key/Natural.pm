@@ -130,8 +130,9 @@ Sort::Key::Natural - fast natural sorting
 This module extends the L<Sort::Key> family of modules to support
 natural sorting.
 
-Under natural sorting, strings are split at word and number
-boundaries, and the resulting substrings are compared as follows:
+Under natural sorting, strings are split at boundaries between words
+and numbers and at non-alphanumeric characters, and the resulting
+substrings are compared as follows:
 
 =over 4
 
@@ -151,8 +152,8 @@ numeric substrings come always before alphabetic substrings
 
 Spaces, symbols and non-printable characters are only considered for
 splitting the string into its parts but not for sorting. For instance
-C<foo-bar-42> is broken in three substrings C<foo>, C<bar> and C<42>
-and after that the dashes are ignored.
+C<foo-bar41-42> is broken in four substrings C<foo>, C<bar>, C<41> and
+C<42> and after that, the dashes are ignored.
 
 Note, that the sorting is case sensitive. To do a case insensitive
 sort you have to convert the keys explicitly:
