@@ -1,6 +1,7 @@
 Revision history for Perl extension Sort::Key.
 
 1.34
+	- pod fix (contributed by ikegami)
         - pod fix (contributed by Florian Schlichting from Debian)
         - remove references to abandoned Sort::Key::External
 

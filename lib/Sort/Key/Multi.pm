@@ -85,7 +85,7 @@ C<iii> and C<rs2> is equivalent to C<rsrs>).
 
 For instance:
 
-   use Key::Sort::Multi qw(iirskeysort
+   use Sort::Key::Multi qw(iirskeysort
                            i2rskeysort
                            i_i_rs__keysort
                            i2rs_keysort);
@@ -107,7 +107,7 @@ For a more general multi-key sorter generator see L<Sort::Key::Maker>.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2006, 2014 by Salvador FandiE<ntilde>o
+Copyright (C) 2006, 2014, 2020 by Salvador FandiE<ntilde>o
 E<lt>sfandino@yahoo.comE<gt>
 
 This library is free software; you can redistribute it and/or modify
